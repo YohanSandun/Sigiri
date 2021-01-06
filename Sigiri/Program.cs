@@ -6,7 +6,23 @@ namespace Sigiri
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            while (true) {
+                Console.Write("-> ");
+                string code = Console.ReadLine();
+
+                Tokenizer tokenizer = new Tokenizer("<stdin>", code);
+                TokenizerResult tokenizerResult = tokenizer.GenerateTokens();
+                if (!tokenizerResult.HasError)
+                {
+                    foreach (Token item in tokenizerResult.Tokens)
+                    {
+                        Console.WriteLine(item);
+                    }
+                }else
+                    Console.WriteLine(tokenizerResult.Error);
+            }
         }
+
+        
     }
 }
