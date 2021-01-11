@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sigiri
+﻿namespace Sigiri
 {
     enum TokenType { 
         INTEGER,
@@ -27,8 +23,9 @@ namespace Sigiri
         RIGHT_SHIFT,
 
         BOOLEAN_AND,
-        BOOLENA_OR,
+        BOOLEAN_OR,
         BOOLEAN_NOT,
+        IN,
 
         EQUALS_EQUALS,
         NOT_EQUALS,
@@ -38,6 +35,21 @@ namespace Sigiri
         GREATER_TOE,    //Greater than or equal
 
         EQUALS,
+        PLS_EQ,
+        MIN_EQ,
+        MUL_EQ,
+        DIV_EQ,
+        MOD_EQ,
+        EXP_EQ,
+        AND_EQ,
+        XOR_EQ,
+        COM_EQ,
+        LS_EQ,
+        RS_EQ,
+        OR_EQ,
+
+        COLON,
+        COMMA,
         DOT,
 
         LEFT_PAREN,     //Left parentheses
@@ -75,6 +87,12 @@ namespace Sigiri
             if (Value != null)
                 return Type + ":" + Value;
             return Type.ToString();
+        }
+
+        public bool CheckKeyword(string id) {
+            if (Type == TokenType.KEYWORD && Value.ToString().Equals(id))
+                return true;
+            return false;
         }
     }
 }

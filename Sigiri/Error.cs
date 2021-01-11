@@ -35,4 +35,31 @@ namespace Sigiri
 
         }
     }
+
+    class RuntimeError : Error {
+        private Context Context { get; set; }
+        public RuntimeError(Position position, string details, Context context) : base(position, "RuntimeError", details)
+        {
+            this.Context = context;
+        }
+        public override string ToString()
+        {
+            return Name + ": " + Details + "\n" + TraceBack();
+        }
+
+        private string TraceBack() {
+            string result = "";
+            Context ctx = Context;
+            Position position = Position;
+            while (ctx != null) {
+                if (position != null) 
+                    result += " File '" + position.FileName + "' at Line " + (position.LineNum + 1) + " in " + ctx.Name + result;
+                else
+                    result += " in " + ctx.Name + result;
+                position = ctx.Position;
+                ctx = ctx.Parent;
+            }
+            return "\nMost recent call last,\n" + result;
+        }
+    }
 }
