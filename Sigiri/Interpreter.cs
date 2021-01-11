@@ -6,6 +6,11 @@ namespace Sigiri
 {
     class Interpreter
     {
+        public Interpreter()
+        {
+            BuiltinMethods.InitializeBuiltinMethods();
+        }
+
         public RuntimeResult Visit(Node node, Context context) {
             if (node.Type == NodeType.NUMBER)
                 return VisitNumberNode((NumberNode)node, context);
@@ -348,7 +353,7 @@ namespace Sigiri
             if (node.Node.Type == NodeType.VAR_ACCESS) {
                 VarAccessNode accessNode = (VarAccessNode)node.Node;
                 string name = accessNode.Token.Value.ToString();
-                if (BuiltinMethods.Methods.ContainsKey(name))
+                if (BuiltinMethods.BuiltinMethodList.ContainsKey(name))
                     return BuiltinMethods.Execute(name, args, node.Position, context);
                 else {
                     Values.Value method = context.GetSymbol(name);
