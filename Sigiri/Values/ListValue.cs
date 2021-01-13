@@ -37,6 +37,21 @@ namespace Sigiri.Values
                 return new RuntimeResult(new RuntimeError(Position, "Index out of range", Context));
         }
 
+        public override int GetElementCount()
+        {
+            return Elements.Count;
+        }
+
+        public override RuntimeResult GetElementAt(int index)
+        {
+            if (index >= 0 && index < Elements.Count)
+                return new RuntimeResult(Elements[index]);
+            else if (index < 0 && index >= (Elements.Count * -1))
+                return new RuntimeResult(Elements[Elements.Count + index]);
+            else
+                return new RuntimeResult(new RuntimeError(Position, "Index out of range", Context));
+        }
+
         public override RuntimeResult SubscriptAssign(Value index, Value value)
         {
             if (index.Type != ValueType.INTEGER)

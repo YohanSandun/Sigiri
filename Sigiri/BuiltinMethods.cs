@@ -21,6 +21,27 @@ namespace Sigiri
                 { "prompt", new Values.StringValue("")}
             }, input));
 
+            BuiltinMethodList.Add("abs", new BuiltinMethod(new List<string>() { "value" }, new Dictionary<string, Values.Value>() {
+                { "value", null}
+            }, abs));
+
+            BuiltinMethodList.Add("char", new BuiltinMethod(new List<string>() { "value" }, new Dictionary<string, Values.Value>() {
+                { "value", null}
+            }, chr));
+
+            BuiltinMethodList.Add("toInt", new BuiltinMethod(new List<string>() { "value", "fromBase" }, new Dictionary<string, Values.Value>() {
+                { "value", null},
+                { "fromBase", new Values.IntegerValue(10)}
+            }, toInt));
+
+            BuiltinMethodList.Add("toFloat", new BuiltinMethod(new List<string>() { "value" }, new Dictionary<string, Values.Value>() {
+                { "value", null}
+            }, toFloat));
+
+            BuiltinMethodList.Add("toStr", new BuiltinMethod(new List<string>() { "value" }, new Dictionary<string, Values.Value>() {
+                { "value", null}
+            }, toStr));
+
         }
 
         public static RuntimeResult Execute(string name, List<(string, Values.Value)> args, Position position, Context context) 
@@ -66,6 +87,57 @@ namespace Sigiri
             Console.Write(prompt);
             string input = Console.ReadLine();
             return new RuntimeResult(new Values.StringValue(input).SetPositionAndContext(position, context));
+        }
+
+        static RuntimeResult abs(Position position, Context context) {
+            Values.Value value = context.GetSymbol("value");
+            return value.Abs();
+        }
+
+        static RuntimeResult chr(Position position, Context context)
+        {
+            Values.Value value = context.GetSymbol("value");
+            if (value.Type != Values.ValueType.INTEGER)
+                return new RuntimeResult(new RuntimeError(position, "Can't convert " + value.Type.ToString().ToLower() + " to char", context));
+            return new RuntimeResult(new Values.StringValue(Convert.ToChar(value.Data).ToString()).SetPositionAndContext(position, context));
+        }
+
+        static RuntimeResult toInt(Position position, Context context)
+        {
+            Values.Value value = context.GetSymbol("value");
+            Values.Value baseVal = context.GetSymbol("fromBase");
+            if (baseVal.Type != Values.ValueType.INTEGER)
+                return new RuntimeResult(new RuntimeError(position, "Base value should be an integer", context));
+            if (value.Type == Values.ValueType.FLOAT)
+                return new RuntimeResult(new Values.IntegerValue(Convert.ToInt32((double)value.Data)).SetPositionAndContext(position, context));
+            try
+            {
+                int val = Convert.ToInt32(value.Data.ToString(), (int)baseVal.Data);
+                return new RuntimeResult(new Values.IntegerValue(val).SetPositionAndContext(position, context));
+            }
+            catch {
+                return new RuntimeResult(new RuntimeError(position, "Input string cannot converted into an integer", context));
+            }
+        }
+
+        static RuntimeResult toFloat(Position position, Context context)
+        {
+            Values.Value value = context.GetSymbol("value");
+            try
+            {
+                double val = Convert.ToDouble(value.Data);
+                return new RuntimeResult(new Values.FloatValue(val).SetPositionAndContext(position, context));
+            }
+            catch
+            {
+                return new RuntimeResult(new RuntimeError(position, "Input string cannot converted into an integer", context));
+            }
+        }
+
+        static RuntimeResult toStr(Position position, Context context)
+        {
+            Values.Value value = context.GetSymbol("value");
+            return new RuntimeResult(new Values.StringValue(value.Data.ToString()).SetPositionAndContext(position, context));
         }
     }
 

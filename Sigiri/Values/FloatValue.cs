@@ -10,7 +10,11 @@ namespace Sigiri.Values
         {
             Data = data;
         }
-
+        public override RuntimeResult Abs()
+        {
+            double data = (double)Data;
+            return data < 0 ? new RuntimeResult(new IntegerValue(data * -1).SetPositionAndContext(Position, Context)) : new RuntimeResult(new IntegerValue(data).SetPositionAndContext(Position, Context));
+        }
         public override RuntimeResult Add(Value other)
         {
             if (other.Type == ValueType.FLOAT)

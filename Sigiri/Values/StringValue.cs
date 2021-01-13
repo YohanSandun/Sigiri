@@ -24,6 +24,22 @@ namespace Sigiri.Values
                 return new RuntimeResult(new RuntimeError(Position, "Index out of range", Context));
         }
 
+        public override int GetElementCount()
+        {
+            return Data.ToString().Length;
+        }
+
+        public override RuntimeResult GetElementAt(int index)
+        {
+            string str = Data.ToString();
+            if (index >= 0 && index < str.Length)
+                return new RuntimeResult(new StringValue(str[index]).SetPositionAndContext(Position, Context));
+            else if (index < 0 && index >= (str.Length * -1))
+                return new RuntimeResult(new StringValue(str[str.Length - 1]).SetPositionAndContext(Position, Context));
+            else
+                return new RuntimeResult(new RuntimeError(Position, "Index out of range", Context));
+        }
+
         public override RuntimeResult Add(Value other)
         {
             if (other.Type == ValueType.STRING || other.Type == ValueType.INTEGER || other.Type == ValueType.FLOAT || other.Type == ValueType.LIST)

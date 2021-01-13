@@ -15,6 +15,7 @@ namespace Sigiri
         BLOCK,
         IF,
         FOR,
+        FOR_EACH,
         WHILE,
         DO,
         WHEN,
@@ -24,7 +25,8 @@ namespace Sigiri
         RETURN,
         BREAK,
         CONTINUE,
-        ATTRIBUTE
+        ATTRIBUTE,
+        LOAD
     }
 
     abstract class Node
@@ -397,10 +399,12 @@ namespace Sigiri
     {
         public Node Body { get; set; }
         public Token Token { get; set; }
-        public ClassNode(Token token, Node body) : base(NodeType.CLASS)
+        public Token BaseClassToken { get; set; }
+        public ClassNode(Token token, Node body, Token baseClass=null) : base(NodeType.CLASS)
         {
             this.Token = token;
             this.Body = body;
+            this.BaseClassToken = baseClass;
         }
 
         public override string ToString()
@@ -421,6 +425,39 @@ namespace Sigiri
         public override string ToString()
         {
             return "ATTRIBUTE";
+        }
+    }
+
+    class LoadNode : Node
+    {
+        public Token Token { get; set; }
+        public Token ClassToken { get; set; }
+        public LoadNode(Token token, Token classToken = null) : base(NodeType.LOAD)
+        {
+            this.Token = token;
+            this.ClassToken = classToken;
+        }
+
+        public override string ToString()
+        {
+            return "LOAD " + Token.ToString();
+        }
+    }
+
+    class ForEachNode : Node { 
+        public Token Token { get; set; }
+        public Token Iteratable { get; set; }
+        public Node Body { get; set; }
+        public ForEachNode(Token token, Token iteratable, Node body):base(NodeType.FOR_EACH)
+        {
+            this.Token = token;
+            this.Iteratable = iteratable;
+            this.Body = body;
+        }
+
+        public override string ToString()
+        {
+            return "FOR_EACH"; 
         }
     }
 }

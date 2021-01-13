@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using System.Reflection;
 
 namespace Sigiri
 {
@@ -56,7 +57,10 @@ namespace Sigiri
                 return VisitClassNode((ClassNode)node, context);
             else if (node.Type == NodeType.ATTRIBUTE)
                 return VisitAttributeNode((AttributeNode)node, context);
-
+            else if (node.Type == NodeType.LOAD)
+                return VisitLoadNode((LoadNode)node, context);
+            else if (node.Type == NodeType.FOR_EACH)
+                return VisitForEachNode((ForEachNode)node, context);
             throw new NotImplementedException();
         }
 
@@ -342,11 +346,11 @@ namespace Sigiri
             return new RuntimeResult(method);
         }
 
-        private RuntimeResult VisitCallNode(CallNode node, Context context) {
+        private RuntimeResult VisitCallNode(CallNode node, Context context, Context fromCtx = null) {
             List<(string, Values.Value)> args = new List<(string, Values.Value)>();
             for (int i = 0; i < node.Arguments.Count; i++)
             {
-                RuntimeResult result = Visit(node.Arguments[i].Item2, context);
+                RuntimeResult result = Visit(node.Arguments[i].Item2, fromCtx == null ? context : fromCtx);
                 if (result.HasError) return result;
                 args.Add((node.Arguments[i].Item1, result.Value));
             }
@@ -364,19 +368,47 @@ namespace Sigiri
                     else if (method.Type == Values.ValueType.CLASS)
                     {
                         Values.ClassValue classValue = ((Values.ClassValue)method).Clone();
-                        Context newContext = new Context(name, context);
-                        classValue.SetPositionAndContext(accessNode.Token.Position, newContext);
-                        newContext.AddSymbol("this", classValue);
-                        RuntimeResult runtimeResult = Visit(classValue.Body, newContext);
-                        if (runtimeResult.HasError) return runtimeResult;
+                        //classValue.Type = Values.ValueType.OBJECT;
+                        if (classValue.BaseClass != null)
+                        {
+                            RuntimeResult baseResult = classValue.InitializeBaseClass(context, this);
+                            if (baseResult.HasError) return baseResult;
 
-                        //Constructor
-                        Values.Value ctorValue = newContext.GetSymbol("init");
-                        if (ctorValue != null && ctorValue.Type == Values.ValueType.METHOD) {
-                            Values.MethodValue initMethod = (Values.MethodValue)ctorValue;
-                            initMethod.Execute(args, this);
+                            Context newContext = new Context(name, baseResult.Value.Context);
+                            classValue.SetPositionAndContext(accessNode.Token.Position, newContext);
+                            newContext.AddSymbol("this", classValue);
+                            newContext.AddSymbol("base", baseResult.Value);
+                            RuntimeResult runtimeResult = Visit(classValue.Body, newContext);
+                            if (runtimeResult.HasError) return runtimeResult;
+
+                            //Constructor
+                            Values.Value ctorValue = newContext.GetSymbol("init");
+                            if (ctorValue != null && ctorValue.Type == Values.ValueType.METHOD)
+                            {
+                                Values.MethodValue initMethod = (Values.MethodValue)ctorValue;
+                                RuntimeResult res = initMethod.Execute(args, this);
+                                if (res.HasError)
+                                    return res;
+                            }
+                            return new RuntimeResult(classValue);
                         }
-                        return new RuntimeResult(classValue);
+                        else {
+                            Context newContext = new Context(name, context);
+                            classValue.SetPositionAndContext(accessNode.Token.Position, newContext);
+                            newContext.AddSymbol("this", classValue);
+                            RuntimeResult runtimeResult = Visit(classValue.Body, newContext);
+                            if (runtimeResult.HasError) return runtimeResult;
+
+                            //Constructor
+                            Values.Value ctorValue = newContext.GetSymbol("init");
+                            if (ctorValue != null && ctorValue.Type == Values.ValueType.METHOD)
+                            {
+                                Values.MethodValue initMethod = (Values.MethodValue)ctorValue;
+                                initMethod.Execute(args, this);
+                            }
+                            return new RuntimeResult(classValue);
+                        }
+                        
                     }
                     return new RuntimeResult(new RuntimeError(node.Position, "'" + name + "' is not a method", context));
                 }
@@ -412,7 +444,18 @@ namespace Sigiri
 
         private RuntimeResult VisitClassNode(ClassNode node, Context context) {
             string name = node.Token.Value.ToString();
-            Values.Value cls = new Values.ClassValue(name, node.Body).SetPositionAndContext(node.Token.Position, context);
+            if (node.BaseClassToken != null) {
+                string baseName = node.BaseClassToken.Value.ToString();
+                Values.Value baseValue = context.GetSymbol(baseName);
+                if (baseValue == null)
+                    return new RuntimeResult(new RuntimeError(node.BaseClassToken.Position, "Base class '"+baseName+"' not found!", context));
+                if (baseValue.Type != Values.ValueType.CLASS)
+                    return new RuntimeResult(new RuntimeError(node.BaseClassToken.Position, "Object '" + baseName + "' is not a class!", context));
+                Values.Value newCls = new Values.ClassValue(name, node.Body, baseValue, baseName).SetPositionAndContext(node.Token.Position, context);
+                context.AddSymbol(name, newCls);
+                return new RuntimeResult(newCls);
+            }
+            Values.Value cls = new Values.ClassValue(name, node.Body, null, "").SetPositionAndContext(node.Token.Position, context);
             context.AddSymbol(name, cls);
             return new RuntimeResult(cls);
         }
@@ -420,7 +463,8 @@ namespace Sigiri
         private RuntimeResult VisitAttributeNode(AttributeNode node, Context context) {
             RuntimeResult runtimeResult = Visit(node.BaseNode, context);
             if (runtimeResult.HasError) return runtimeResult;
-            if (node.Node.Type == NodeType.VAR_ASSIGN) {
+            if (node.Node.Type == NodeType.VAR_ASSIGN)
+            {
                 VarAssignNode assignNode = (VarAssignNode)node.Node;
                 string name = assignNode.Token.Value.ToString();
                 if (name == "null" || name == "true" || name == "false")
@@ -430,7 +474,178 @@ namespace Sigiri
                 runtimeResult.Value.Context.AddSymbol(name, result.Value);
                 return result;
             }
+            else if (node.Node.Type == NodeType.CALL)
+            {
+                if (runtimeResult.Value.Type == Values.ValueType.ASSEMBLY)
+                {
+                    Values.AssemblyValue asmVal = (Values.AssemblyValue)runtimeResult.Value;
+                    CallNode callNode = (CallNode)node.Node;
+                    VarAccessNode accessNode = (VarAccessNode)callNode.Node;
+                    string name = accessNode.Token.Value.ToString();
+                    List<object> args = new List<object>();
+                    for (int i = 0; i < callNode.Arguments.Count; i++)
+                    {
+                        RuntimeResult result = Visit(callNode.Arguments[i].Item2, context);
+                        if (result.HasError) return result;
+                        if (result.Value.Data.GetType().Name.Equals("Double"))
+                            args.Add(Convert.ToSingle(result.Value.Data));
+                        else
+                            args.Add(result.Value.Data);
+                    }
+
+                    return asmVal.Invoke(name, args.ToArray());
+                }
+                else {
+                    return VisitCallNode((CallNode)node.Node, runtimeResult.Value.Context, context);
+                }
+                //else
+                //{
+                //    CallNode callNode = (CallNode)node.Node;
+                //    List<(string, Values.Value)> args = new List<(string, Values.Value)>();
+                //    for (int i = 0; i < callNode.Arguments.Count; i++)
+                //    {
+                //        RuntimeResult result = Visit(callNode.Arguments[i].Item2, context);
+                //        if (result.HasError) return result;
+                //        args.Add((callNode.Arguments[i].Item1, result.Value));
+                //    }
+                //    if (callNode.Node.Type == NodeType.VAR_ACCESS)
+                //    {
+                //        VarAccessNode accessNode = (VarAccessNode)callNode.Node;
+                //        string name = accessNode.Token.Value.ToString();
+                //            Values.Value method = runtimeResult.Value.Context.GetSymbol(name);
+                //            if (method == null)
+                //                return new RuntimeResult(new RuntimeError(callNode.Position, "Method '" + name + "' is not defined", runtimeResult.Value.Context));
+                //            if (method.Type == Values.ValueType.METHOD)
+                //                return ((Values.MethodValue)method).Execute(args, this);
+                //            else if (method.Type == Values.ValueType.CLASS)
+                //            {
+                //                Values.ClassValue classValue = ((Values.ClassValue)method).Clone();
+                //                //classValue.Type = Values.ValueType.OBJECT;
+                //                if (classValue.BaseClass != null)
+                //                {
+                //                    RuntimeResult baseResult = classValue.InitializeBaseClass(context, this);
+                //                    if (baseResult.HasError) return baseResult;
+
+                //                    Context newContext = new Context(name, baseResult.Value.Context);
+                //                    classValue.SetPositionAndContext(accessNode.Token.Position, newContext);
+                //                    newContext.AddSymbol("this", classValue);
+                //                    newContext.AddSymbol("base", baseResult.Value);
+                //                    RuntimeResult runtimeResult = Visit(classValue.Body, newContext);
+                //                    if (runtimeResult.HasError) return runtimeResult;
+
+                //                    //Constructor
+                //                    Values.Value ctorValue = newContext.GetSymbol("init");
+                //                    if (ctorValue != null && ctorValue.Type == Values.ValueType.METHOD)
+                //                    {
+                //                        Values.MethodValue initMethod = (Values.MethodValue)ctorValue;
+                //                        RuntimeResult res = initMethod.Execute(args, this);
+                //                        if (res.HasError)
+                //                            return res;
+                //                    }
+                //                    return new RuntimeResult(classValue);
+                //                }
+                //                else
+                //                {
+                //                    Context newContext = new Context(name, context);
+                //                    classValue.SetPositionAndContext(accessNode.Token.Position, newContext);
+                //                    newContext.AddSymbol("this", classValue);
+                //                    RuntimeResult runtimeResult = Visit(classValue.Body, newContext);
+                //                    if (runtimeResult.HasError) return runtimeResult;
+
+                //                    //Constructor
+                //                    Values.Value ctorValue = newContext.GetSymbol("init");
+                //                    if (ctorValue != null && ctorValue.Type == Values.ValueType.METHOD)
+                //                    {
+                //                        Values.MethodValue initMethod = (Values.MethodValue)ctorValue;
+                //                        initMethod.Execute(args, this);
+                //                    }
+                //                    return new RuntimeResult(classValue);
+                //                }
+
+                //            }
+                //            return new RuntimeResult(new RuntimeError(node.Position, "'" + name + "' is not a method", context));
+                //    }
+                //    return new RuntimeResult(new RuntimeError(node.Position, "Can't call as a method", context));
+                //}
+            }
             return Visit(node.Node, runtimeResult.Value.Context);
+        }
+
+        private RuntimeResult VisitLoadNode(LoadNode node, Context context) {
+            string fname = node.Token.Value.ToString();
+            if (File.Exists(fname + ".dll"))
+            {
+                if (node.ClassToken != null)
+                {
+                    Values.AssemblyValue value = new Values.AssemblyValue();
+                    value.Assembly = Assembly.LoadFile(AppContext.BaseDirectory + "\\" + fname + ".dll");
+                    value.AsmType = value.Assembly.GetType(fname + "." + node.ClassToken.Value.ToString());
+                    FieldInfo[] fields = value.AsmType.GetFields();
+                    for (int j = 0; j < fields.Length; j++)
+                    {
+                        context.AddSymbol(fields[j].Name, Values.AssemblyValue.ParseValue(fields[j].GetValue(null), node.Token.Position, context));
+                    }
+                    value.SetPositionAndContext(node.Token.Position, context);
+                    context.AddSymbol(node.ClassToken.Value.ToString(), value);
+                    return new RuntimeResult(value);
+                }
+                else {
+                    Assembly asm = Assembly.LoadFile(AppContext.BaseDirectory + "\\" + fname + ".dll");
+                    Type[] types = asm.GetTypes();
+                    for (int i = 0; i < types.Length; i++)
+                    {
+                        Values.AssemblyValue value = new Values.AssemblyValue();
+                        value.Assembly = asm;
+                        value.AsmType = types[i];
+                        FieldInfo[] fields = types[i].GetFields();
+                        for (int j = 0; j < fields.Length; j++)
+                        {
+                            context.AddSymbol(fields[j].Name, Values.AssemblyValue.ParseValue(fields[j].GetValue(null), node.Token.Position, context));
+                        }
+                        value.SetPositionAndContext(node.Token.Position, context);
+                        context.AddSymbol(types[i].Name, value);
+                        if (i == types.Length - 1)
+                            return new RuntimeResult(value);
+                    }
+                }
+            }
+            else if (File.Exists(fname + ".txt")) {
+                string code = File.ReadAllText(fname + ".txt").Replace("\r\n", "\n");
+                Tokenizer tokenizer = new Tokenizer(fname, code);
+                TokenizerResult tokenizerResult = tokenizer.GenerateTokens();
+                if (!tokenizerResult.HasError)
+                {
+                    Parser parser = new Parser(tokenizerResult.Tokens);
+                    ParserResult parserResult = parser.Parse();
+                    if (!parserResult.HasError)
+                    {
+                        Interpreter interpreter = new Interpreter();
+                        return interpreter.Visit(parserResult.Node, context);
+                    }
+                    else
+                        return new RuntimeResult(parserResult.Error);
+                }
+                else
+                    return new RuntimeResult(tokenizerResult.Error);
+            }
+            return new RuntimeResult(new RuntimeError(node.Token.Position, "Library " + fname + " not found!", context));
+        }
+
+        private RuntimeResult VisitForEachNode(ForEachNode node, Context context) {
+            Values.Value value = context.GetSymbol(node.Iteratable.Value.ToString());
+            if (value == null)
+                return new RuntimeResult(new RuntimeError(node.Iteratable.Position, "'" + node.Iteratable.Value.ToString() + "' Varialbe not defined", context));
+            int elementCount = value.GetElementCount();
+            string varName = node.Token.Value.ToString();
+            for (int i = 0; i < elementCount; i++)
+            {
+                RuntimeResult runtimeResult = value.GetElementAt(i);
+                if (runtimeResult.HasError) return runtimeResult;
+                context.AddSymbol(varName, runtimeResult.Value);
+                RuntimeResult bodyResult = Visit(node.Body, context);
+                if (bodyResult.HasError) return bodyResult;
+            }
+            return new RuntimeResult(value);
         }
     }
 

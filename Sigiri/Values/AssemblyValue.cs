@@ -1,52 +1,55 @@
 ﻿using System;
+using System.Reflection;
 
 namespace Sigiri.Values
 {
-    class ClassValue : Value
+    class AssemblyValue : Value
     {
-        public Node Body { get; set; }
-        public string Name { get; set; }
-        public Value BaseClass { get; set; } = null;
-        public string BaseName { get; set; } = "";
-        public ClassValue(string name, Node body, Value baseClass, string baseName) : base(ValueType.CLASS)
-        {
-            this.Body = body;
-            this.Name = name;
-            this.BaseClass = baseClass;
-            this.BaseName = baseName;
-        }
+
+        public Assembly Assembly { get; set; }
+        public Type AsmType { get; set; }
+
         public override string ToString()
         {
-            return "<class-" + Name + ">";
+            return "Assembly";
         }
 
-        public ClassValue Clone() {
-            return new ClassValue(Name, Body, BaseClass, BaseName);
-        }
-
-        public RuntimeResult InitializeBaseClass(Context ctx, Interpreter interpreter) {
-            if (BaseClass != null) {
-                ClassValue classValue = ((ClassValue)BaseClass).Clone();
-                //classValue.Type = ValueType.OBJECT;
-                if (classValue.BaseClass != null)
-                {
-                    RuntimeResult baseResult = classValue.InitializeBaseClass(ctx, interpreter);
-                    if (baseResult.HasError) return baseResult;
-
-                    Context newContext = new Context(BaseName, baseResult.Value.Context);
-                    classValue.SetPositionAndContext(Position, newContext);
-                    newContext.AddSymbol("this", classValue);
-                    newContext.AddSymbol("base", baseResult.Value);
-                    return interpreter.Visit(classValue.Body, newContext);
-                }
-                else {
-                    Context newContext = new Context(BaseName, ctx);
-                    classValue.SetPositionAndContext(Position, newContext);
-                    newContext.AddSymbol("this", classValue);
-                    return interpreter.Visit(classValue.Body, newContext);
-                }
+        public RuntimeResult Invoke(string name, object[] args) {
+            try {
+                MethodInfo methodInfo = AsmType.GetMethod(name);
+                if (methodInfo == null)
+                    return new RuntimeResult(new RuntimeError(Position, "Method " + name + " not found in assembly", Context));
+                object output = methodInfo.Invoke(null, args);
+                if (output == null)
+                    return new RuntimeResult(new NullValue().SetPositionAndContext(Position, Context));
+                string type = output.GetType().Name;
+                if (type.Equals("Double") || type.Equals("Single") || type.Equals("Decimal"))
+                    return new RuntimeResult(new FloatValue(output).SetPositionAndContext(Position, Context));
+                if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32") || type.Equals("Long"))
+                    return new RuntimeResult(new IntegerValue(output).SetPositionAndContext(Position, Context));
+                if (type.Equals("Char") || type.Equals("String"))
+                    return new RuntimeResult(new StringValue(output).SetPositionAndContext(Position, Context));
             }
-            return new RuntimeResult(new RuntimeError(Position, "Base class '" + BaseName + "' not found!", ctx));
+            catch (Exception ex) { return new RuntimeResult(new RuntimeError(Position, "Error while invoking the method '"+name+"' - "+ex.Message+"", Context)); }
+            return new RuntimeResult(new RuntimeError(Position, "Error while invoking the method" + name, Context));
+        }
+
+        public static Value ParseValue(object value, Position position, Context context) {
+            if (value == null)
+                return new NullValue().SetPositionAndContext(position, context);
+            string type = value.GetType().Name;
+            if (type.Equals("Double") || type.Equals("Single") || type.Equals("Decimal"))
+                return new FloatValue(value).SetPositionAndContext(position, context);
+            if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32") || type.Equals("Long"))
+                return new IntegerValue(value).SetPositionAndContext(position, context);
+            if (type.Equals("Char") || type.Equals("String"))
+                return new StringValue(value).SetPositionAndContext(position, context);
+            return new NullValue().SetPositionAndContext(position, context);
+        }
+
+        public AssemblyValue() : base(ValueType.ASSEMBLY)
+        {
+
         }
 
         public override RuntimeResult Add(Value other)

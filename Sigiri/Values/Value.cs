@@ -13,7 +13,8 @@ namespace Sigiri.Values
         LIST,
         METHOD,
         CLASS,
-        OBJECT
+        OBJECT,
+        ASSEMBLY
     }
 
     abstract class Value
@@ -55,6 +56,18 @@ namespace Sigiri.Values
         public abstract RuntimeResult BooleanAnd(Value other);
         public abstract RuntimeResult BooleanOr(Value other);
         public abstract RuntimeResult BooleanNot();
+
+        public virtual int GetElementCount() {
+            return 0;
+        }
+
+        public virtual RuntimeResult GetElementAt(int index) {
+            return new RuntimeResult(new RuntimeError(Position, "Subscript not supported on this object", Context));
+        }
+
+        public virtual RuntimeResult Abs() {
+            return new RuntimeResult(new RuntimeError(Position, "abs() is not possible on " + Type.ToString().ToLower() + "", Context));
+        }
 
         public virtual RuntimeResult In(Value other) {
             return new RuntimeResult(new RuntimeError(Position, "Unsupported operator 'in'", Context));

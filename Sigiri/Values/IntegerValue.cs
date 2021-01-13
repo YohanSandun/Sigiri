@@ -13,6 +13,11 @@ namespace Sigiri.Values
             this.asBoolean = asBoolean;
         }
 
+        public override RuntimeResult Abs()
+        {
+            int data = (int)Data;
+            return data < 0 ? new RuntimeResult(new IntegerValue(data * -1).SetPositionAndContext(Position, Context)) : new RuntimeResult(new IntegerValue(data).SetPositionAndContext(Position, Context));
+        }
         public override string ToString()
         {
             if (asBoolean)

@@ -11,11 +11,11 @@ namespace Sigiri
         private readonly string Letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_$";
         private readonly string[] Keywords = { "and", "or", "not", "in", 
                                                "if", "elif", "else",
-                                               "for", "to", "step",
+                                               "for", "to", "step", "each",
                                                "while", "do", "until",
                                                "when", "default",
                                                "method", "class",
-                                               "return", "break", "continue" };
+                                               "return", "break", "continue", "load" };
         private Dictionary<char, string> escapeChars = new Dictionary<char, string>()
         {
             { 'n', "\n"},

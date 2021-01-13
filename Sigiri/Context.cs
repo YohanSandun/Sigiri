@@ -8,7 +8,6 @@ namespace Sigiri
     {
         public string Name { get; set; }
         public Context Parent { get; set; }
-
         public bool Break { get; set; }
         public bool Continue { get; set; }
         public bool Return { get; set; }

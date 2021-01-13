@@ -290,6 +290,44 @@ namespace Sigiri
             }
         }
 
+        private ParserResult ForEachStmt() {
+            Advance(2);
+            Token token = currentToken;
+            if (currentToken.Type != TokenType.IDENTIFIER)
+                return new ParserResult(new InvalidSyntaxError(token.Position, "Expected an identifier"));
+            Advance();
+            if (currentToken.Type != TokenType.IN)
+                return new ParserResult(new InvalidSyntaxError(token.Position, "Expected 'in'"));
+            Advance();
+            Token iteratable = currentToken;
+            if (currentToken.Type != TokenType.IDENTIFIER)
+                return new ParserResult(new InvalidSyntaxError(token.Position, "Expected an identifier"));
+            Advance();
+            if (currentToken.Type == TokenType.COLON)
+            {
+                Advance();
+                SkipNewLines();
+                ParserResult parserResult = Expr();
+                if (parserResult.HasError) return parserResult;
+                return new ParserResult(new ForEachNode(token, iteratable, parserResult.Node));
+            }
+            else
+            {
+                SkipNewLines();
+                if (currentToken.Type == TokenType.LEFT_BRA)
+                {
+                    Advance();
+                    SkipNewLines();
+                    ParserResult parserResult = Block();
+                    if (parserResult.HasError) return parserResult;
+                    Advance();
+                    return new ParserResult(new ForEachNode(token, iteratable, parserResult.Node));
+                }
+                else
+                    return new ParserResult(new InvalidSyntaxError(token.Position, "Expected ':' or '{'"));
+            }
+        }
+
         private ParserResult WhileStmt() {
             Advance();
             ParserResult condResult = Expr();
@@ -476,13 +514,42 @@ namespace Sigiri
             if (token.Type != TokenType.IDENTIFIER)
                 return new ParserResult(new InvalidSyntaxError(currentToken.Position, "Expected an identifier"));
             Advance();
+            Token baseClassToken = null;
+            if (currentToken.Type == TokenType.COLON) {
+                Advance();
+                if (currentToken.Type != TokenType.IDENTIFIER)
+                    return new ParserResult(new InvalidSyntaxError(currentToken.Position, "Expected an identifier"));
+                baseClassToken = currentToken;
+                Advance();
+            }
+            SkipNewLines();
             if (currentToken.Type != TokenType.LEFT_BRA)
                 return new ParserResult(new InvalidSyntaxError(currentToken.Position, "Expected an '{'"));
             Advance();
             ParserResult bodyResult = Block();
             if (bodyResult.HasError) return bodyResult;
             Advance();
-            return new ParserResult(new ClassNode(token, bodyResult.Node));
+            return new ParserResult(new ClassNode(token, bodyResult.Node, baseClassToken));
+        }
+
+        private ParserResult LoadStmt() {
+            Advance();
+            Token token = currentToken;
+            if (token.Type == TokenType.IDENTIFIER)
+            {
+                Advance();
+                if (currentToken.Type == TokenType.DOT) {
+                    Advance();
+                    Token clsTok = currentToken;
+                    if (clsTok.Type == TokenType.IDENTIFIER) {
+                        Advance();
+                        return new ParserResult(new LoadNode(token, clsTok));
+                    }
+                }
+                else
+                    return new ParserResult(new LoadNode(token));
+            }
+            return new ParserResult(new InvalidSyntaxError(token.Position, "Expected identifier or string"));
         }
 
         private ParserResult Atom() {
@@ -523,7 +590,11 @@ namespace Sigiri
             else if (token.CheckKeyword("if"))
                 return IfStmt();
             else if (token.CheckKeyword("for"))
+            {
+                if (Peek().CheckKeyword("each"))
+                    return ForEachStmt();
                 return ForStmt();
+            }
             else if (token.CheckKeyword("while"))
                 return WhileStmt();
             else if (token.CheckKeyword("do"))
@@ -534,6 +605,8 @@ namespace Sigiri
                 return Method();
             else if (token.CheckKeyword("class"))
                 return Class();
+            else if (token.CheckKeyword("load"))
+                return LoadStmt();
             else if (token.CheckKeyword("return"))
                 return ReturnStmt();
             else if (token.CheckKeyword("break"))
