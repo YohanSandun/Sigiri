@@ -447,9 +447,9 @@ namespace Sigiri
 
     class ForEachNode : Node { 
         public Token Token { get; set; }
-        public Token Iteratable { get; set; }
+        public Node Iteratable { get; set; }
         public Node Body { get; set; }
-        public ForEachNode(Token token, Token iteratable, Node body):base(NodeType.FOR_EACH)
+        public ForEachNode(Token token, Node iteratable, Node body):base(NodeType.FOR_EACH)
         {
             this.Token = token;
             this.Iteratable = iteratable;

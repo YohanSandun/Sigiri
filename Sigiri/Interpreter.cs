@@ -497,78 +497,8 @@ namespace Sigiri
 
                     return asmVal.Invoke(name, args.ToArray());
                 }
-                else {
+                else 
                     return VisitCallNode((CallNode)node.Node, runtimeResult.Value.Context, context);
-                }
-                //else
-                //{
-                //    CallNode callNode = (CallNode)node.Node;
-                //    List<(string, Values.Value)> args = new List<(string, Values.Value)>();
-                //    for (int i = 0; i < callNode.Arguments.Count; i++)
-                //    {
-                //        RuntimeResult result = Visit(callNode.Arguments[i].Item2, context);
-                //        if (result.HasError) return result;
-                //        args.Add((callNode.Arguments[i].Item1, result.Value));
-                //    }
-                //    if (callNode.Node.Type == NodeType.VAR_ACCESS)
-                //    {
-                //        VarAccessNode accessNode = (VarAccessNode)callNode.Node;
-                //        string name = accessNode.Token.Value.ToString();
-                //            Values.Value method = runtimeResult.Value.Context.GetSymbol(name);
-                //            if (method == null)
-                //                return new RuntimeResult(new RuntimeError(callNode.Position, "Method '" + name + "' is not defined", runtimeResult.Value.Context));
-                //            if (method.Type == Values.ValueType.METHOD)
-                //                return ((Values.MethodValue)method).Execute(args, this);
-                //            else if (method.Type == Values.ValueType.CLASS)
-                //            {
-                //                Values.ClassValue classValue = ((Values.ClassValue)method).Clone();
-                //                //classValue.Type = Values.ValueType.OBJECT;
-                //                if (classValue.BaseClass != null)
-                //                {
-                //                    RuntimeResult baseResult = classValue.InitializeBaseClass(context, this);
-                //                    if (baseResult.HasError) return baseResult;
-
-                //                    Context newContext = new Context(name, baseResult.Value.Context);
-                //                    classValue.SetPositionAndContext(accessNode.Token.Position, newContext);
-                //                    newContext.AddSymbol("this", classValue);
-                //                    newContext.AddSymbol("base", baseResult.Value);
-                //                    RuntimeResult runtimeResult = Visit(classValue.Body, newContext);
-                //                    if (runtimeResult.HasError) return runtimeResult;
-
-                //                    //Constructor
-                //                    Values.Value ctorValue = newContext.GetSymbol("init");
-                //                    if (ctorValue != null && ctorValue.Type == Values.ValueType.METHOD)
-                //                    {
-                //                        Values.MethodValue initMethod = (Values.MethodValue)ctorValue;
-                //                        RuntimeResult res = initMethod.Execute(args, this);
-                //                        if (res.HasError)
-                //                            return res;
-                //                    }
-                //                    return new RuntimeResult(classValue);
-                //                }
-                //                else
-                //                {
-                //                    Context newContext = new Context(name, context);
-                //                    classValue.SetPositionAndContext(accessNode.Token.Position, newContext);
-                //                    newContext.AddSymbol("this", classValue);
-                //                    RuntimeResult runtimeResult = Visit(classValue.Body, newContext);
-                //                    if (runtimeResult.HasError) return runtimeResult;
-
-                //                    //Constructor
-                //                    Values.Value ctorValue = newContext.GetSymbol("init");
-                //                    if (ctorValue != null && ctorValue.Type == Values.ValueType.METHOD)
-                //                    {
-                //                        Values.MethodValue initMethod = (Values.MethodValue)ctorValue;
-                //                        initMethod.Execute(args, this);
-                //                    }
-                //                    return new RuntimeResult(classValue);
-                //                }
-
-                //            }
-                //            return new RuntimeResult(new RuntimeError(node.Position, "'" + name + "' is not a method", context));
-                //    }
-                //    return new RuntimeResult(new RuntimeError(node.Position, "Can't call as a method", context));
-                //}
             }
             return Visit(node.Node, runtimeResult.Value.Context);
         }
@@ -634,20 +564,20 @@ namespace Sigiri
         }
 
         private RuntimeResult VisitForEachNode(ForEachNode node, Context context) {
-            Values.Value value = context.GetSymbol(node.Iteratable.Value.ToString());
-            if (value == null)
-                return new RuntimeResult(new RuntimeError(node.Iteratable.Position, "'" + node.Iteratable.Value.ToString() + "' Varialbe not defined", context));
-            int elementCount = value.GetElementCount();
+            RuntimeResult iterResult = Visit(node.Iteratable, context);
+            if (iterResult.HasError) return iterResult;
+
+            int elementCount = iterResult.Value.GetElementCount();
             string varName = node.Token.Value.ToString();
             for (int i = 0; i < elementCount; i++)
             {
-                RuntimeResult runtimeResult = value.GetElementAt(i);
+                RuntimeResult runtimeResult = iterResult.Value.GetElementAt(i);
                 if (runtimeResult.HasError) return runtimeResult;
                 context.AddSymbol(varName, runtimeResult.Value);
                 RuntimeResult bodyResult = Visit(node.Body, context);
                 if (bodyResult.HasError) return bodyResult;
             }
-            return new RuntimeResult(value);
+            return new RuntimeResult(iterResult.Value);
         }
 
         private RuntimeResult VisitDictionaryNode(DictionaryNode node, Context context) {

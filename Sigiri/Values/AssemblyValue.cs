@@ -23,15 +23,18 @@ namespace Sigiri.Values
                 if (output == null)
                     return new RuntimeResult(new NullValue().SetPositionAndContext(Position, Context));
                 string type = output.GetType().Name;
+                Console.WriteLine(type);
                 if (type.Equals("Double") || type.Equals("Single") || type.Equals("Decimal"))
                     return new RuntimeResult(new FloatValue(output).SetPositionAndContext(Position, Context));
-                if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32") || type.Equals("Long"))
+                if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32") || type.Equals("Int64"))
                     return new RuntimeResult(new IntegerValue(output).SetPositionAndContext(Position, Context));
                 if (type.Equals("Char") || type.Equals("String"))
                     return new RuntimeResult(new StringValue(output).SetPositionAndContext(Position, Context));
+                if (type.Equals("Byte[]"))
+                    return new RuntimeResult(ListValue.FromArray((byte[])output).SetPositionAndContext(Position, Context));
             }
             catch (Exception ex) { return new RuntimeResult(new RuntimeError(Position, "Error while invoking the method '"+name+"' - "+ex.Message+"", Context)); }
-            return new RuntimeResult(new RuntimeError(Position, "Error while invoking the method" + name, Context));
+            return new RuntimeResult(new RuntimeError(Position, "Error while invoking the method '" + name + "'", Context));
         }
 
         public static Value ParseValue(object value, Position position, Context context) {

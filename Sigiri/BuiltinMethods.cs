@@ -42,6 +42,10 @@ namespace Sigiri
                 { "value", null}
             }, toStr));
 
+            BuiltinMethodList.Add("split", new BuiltinMethod(new List<string>() { "text", "separator" }, new Dictionary<string, Values.Value>() {
+                { "text", null},
+                { "separator", null}
+            }, split));
         }
 
         public static RuntimeResult Execute(string name, List<(string, Values.Value)> args, Position position, Context context) 
@@ -138,6 +142,16 @@ namespace Sigiri
         {
             Values.Value value = context.GetSymbol("value");
             return new RuntimeResult(new Values.StringValue(value.Data.ToString()).SetPositionAndContext(position, context));
+        }
+        static RuntimeResult split(Position position, Context context)
+        {
+            Values.Value text = context.GetSymbol("text");
+            Values.Value seperator = context.GetSymbol("separator");
+            List<Values.Value> elements = new List<Values.Value>();
+            string[] array = text.Data.ToString().Split(seperator.Data.ToString());
+            for (int i = 0; i < array.Length; i++)
+                elements.Add(new Values.StringValue(array[i]).SetPositionAndContext(position, context));
+            return new RuntimeResult(new Values.ListValue(elements).SetPositionAndContext(position,context));
         }
     }
 

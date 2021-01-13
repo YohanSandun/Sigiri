@@ -299,17 +299,15 @@ namespace Sigiri
             if (currentToken.Type != TokenType.IN)
                 return new ParserResult(new InvalidSyntaxError(token.Position, "Expected 'in'"));
             Advance();
-            Token iteratable = currentToken;
-            if (currentToken.Type != TokenType.IDENTIFIER)
-                return new ParserResult(new InvalidSyntaxError(token.Position, "Expected an identifier"));
-            Advance();
+            ParserResult iteratable = Expr();
+            if (iteratable.HasError) return iteratable;
             if (currentToken.Type == TokenType.COLON)
             {
                 Advance();
                 SkipNewLines();
                 ParserResult parserResult = Expr();
                 if (parserResult.HasError) return parserResult;
-                return new ParserResult(new ForEachNode(token, iteratable, parserResult.Node));
+                return new ParserResult(new ForEachNode(token, iteratable.Node, parserResult.Node));
             }
             else
             {
@@ -321,7 +319,7 @@ namespace Sigiri
                     ParserResult parserResult = Block();
                     if (parserResult.HasError) return parserResult;
                     Advance();
-                    return new ParserResult(new ForEachNode(token, iteratable, parserResult.Node));
+                    return new ParserResult(new ForEachNode(token, iteratable.Node, parserResult.Node));
                 }
                 else
                     return new ParserResult(new InvalidSyntaxError(token.Position, "Expected ':' or '{'"));

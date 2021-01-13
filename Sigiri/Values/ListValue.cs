@@ -37,6 +37,24 @@ namespace Sigiri.Values
                 return new RuntimeResult(new RuntimeError(Position, "Index out of range", Context));
         }
 
+        public static ListValue FromArray(byte[] array) {
+            List<Value> values = new List<Value>();
+            for (int i = 0; i < array.Length; i++)
+            {
+                values.Add(new IntegerValue(array[i]));
+            }
+            return new ListValue(values);
+        }
+        public static ListValue FromArray(int[] array)
+        {
+            List<Value> values = new List<Value>();
+            for (int i = 0; i < array.Length; i++)
+            {
+                values.Add(new IntegerValue(array[i]));
+            }
+            return new ListValue(values);
+        }
+
         public override int GetElementCount()
         {
             return Elements.Count;
