@@ -6,6 +6,7 @@ namespace Sigiri
         NUMBER,
         STRING,
         LIST,
+        DICTIONARY,
         BINARY,
         UNARY,
         VAR_ACCESS,
@@ -458,6 +459,23 @@ namespace Sigiri
         public override string ToString()
         {
             return "FOR_EACH"; 
+        }
+    }
+
+    class DictionaryNode : Node { 
+        public List<(Node, Node)> KeyValuePairs { get; set; }
+        public Position Position { get; set; }
+        public DictionaryNode(List<(Node, Node)> pairs) : base(NodeType.DICTIONARY)
+        {
+            this.KeyValuePairs = pairs;
+        }
+        public Node SetPosition(Position position) {
+            this.Position = position;
+            return this;
+        }
+        public override string ToString()
+        {
+            return "DICTIONARY";
         }
     }
 }

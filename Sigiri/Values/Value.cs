@@ -11,6 +11,7 @@ namespace Sigiri.Values
         FLOAT,
         STRING,
         LIST,
+        DICTIONARY,
         METHOD,
         CLASS,
         OBJECT,

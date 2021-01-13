@@ -552,6 +552,39 @@ namespace Sigiri
             return new ParserResult(new InvalidSyntaxError(token.Position, "Expected identifier or string"));
         }
 
+        private ParserResult DictionaryExpr() {
+            Advance();
+
+            ParserResult keyExpr = Expr();
+            if (keyExpr.HasError) return keyExpr;
+
+            if (currentToken.Type != TokenType.COLON)
+                return new ParserResult(new InvalidSyntaxError(currentToken.Position, "Expected ':'"));
+            Advance();
+
+            ParserResult valueExpr = Expr(); 
+            if (valueExpr.HasError) return valueExpr;
+
+            List<(Node, Node)> pairs = new List<(Node, Node)>();
+            pairs.Add((keyExpr.Node, valueExpr.Node));
+
+            while (currentToken.Type == TokenType.COMMA) {
+                Advance();
+                keyExpr = Expr();
+                if (keyExpr.HasError) return keyExpr;
+                if (currentToken.Type != TokenType.COLON)
+                    return new ParserResult(new InvalidSyntaxError(currentToken.Position, "Expected ':'"));
+                Advance();
+                valueExpr = Expr();
+                if (valueExpr.HasError) return valueExpr;
+                pairs.Add((keyExpr.Node, valueExpr.Node));
+            }
+            if (currentToken.Type != TokenType.RIGHT_BRA)
+                return new ParserResult(new InvalidSyntaxError(currentToken.Position, "Expected ',' or '}'"));
+            Advance();
+            return new ParserResult(new DictionaryNode(pairs).SetPosition(currentToken.Position));
+        }
+
         private ParserResult Atom() {
             Token token = currentToken;
             if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT)
@@ -587,6 +620,8 @@ namespace Sigiri
             }
             else if (token.Type == TokenType.LEFT_SQB)
                 return ListExpr();
+            else if (token.Type == TokenType.LEFT_BRA)
+                return DictionaryExpr();
             else if (token.CheckKeyword("if"))
                 return IfStmt();
             else if (token.CheckKeyword("for"))

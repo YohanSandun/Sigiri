@@ -61,6 +61,8 @@ namespace Sigiri
                 return VisitLoadNode((LoadNode)node, context);
             else if (node.Type == NodeType.FOR_EACH)
                 return VisitForEachNode((ForEachNode)node, context);
+            else if (node.Type == NodeType.DICTIONARY)
+                return VisitDictionaryNode((DictionaryNode)node, context);
             throw new NotImplementedException();
         }
 
@@ -646,6 +648,19 @@ namespace Sigiri
                 if (bodyResult.HasError) return bodyResult;
             }
             return new RuntimeResult(value);
+        }
+
+        private RuntimeResult VisitDictionaryNode(DictionaryNode node, Context context) {
+            List<(Values.Value, Values.Value)> pairs = new List<(Values.Value, Values.Value)>();
+            for (int i = 0; i < node.KeyValuePairs.Count; i++)
+            {
+                RuntimeResult keyResult = Visit(node.KeyValuePairs[i].Item1, context);
+                if (keyResult.HasError) return keyResult;
+                RuntimeResult valueResult = Visit(node.KeyValuePairs[i].Item2, context);
+                if (valueResult.HasError) return valueResult;
+                pairs.Add((keyResult.Value, valueResult.Value));
+            }
+            return new RuntimeResult(new Values.DictionaryValue(pairs).SetPositionAndContext(node.Position, context));
         }
     }
 
