@@ -515,12 +515,23 @@ namespace Sigiri
 
         private RuntimeResult VisitLoadNode(LoadNode node, Context context) {
             string fname = node.Token.Value.ToString();
-            if (File.Exists(fname + ".dll"))
+            string fileName = "";
+
+            if (File.Exists(Program.FileDirectory + fname + Program.LibraryExt))
+                fileName = Program.FileDirectory + fname + Program.LibraryExt;
+            else if (File.Exists(Program.FileDirectory + fname + ".si"))
+                fileName = Program.FileDirectory + fname + ".si";
+            else if (File.Exists(Program.BaseDirectory + fname + Program.LibraryExt))
+                fileName = Program.BaseDirectory + fname + Program.LibraryExt;
+            else if (File.Exists(Program.BaseDirectory + fname + ".si"))
+                fileName = Program.BaseDirectory + fname + ".si";
+
+            if (fileName.EndsWith(Program.LibraryExt))
             {
                 if (node.ClassToken != null)
                 {
                     Values.AssemblyValue value = new Values.AssemblyValue();
-                    value.Assembly = Assembly.LoadFile(AppContext.BaseDirectory + "\\" + fname + ".dll");
+                    value.Assembly = Assembly.LoadFile(fileName);
 
                     value.AsmType = value.Assembly.GetType(fname + "." + node.ClassToken.Value.ToString());
 
@@ -537,7 +548,7 @@ namespace Sigiri
                     return new RuntimeResult(value);
                 }
                 else {
-                    Assembly asm = Assembly.LoadFile(AppContext.BaseDirectory + "\\" + fname + ".dll");
+                    Assembly asm = Assembly.LoadFile(fileName);
                     Type[] types = asm.GetTypes();
                     for (int i = 0; i < types.Length; i++)
                     {
@@ -556,8 +567,8 @@ namespace Sigiri
                     }
                 }
             }
-            else if (File.Exists(fname + ".txt")) {
-                string code = File.ReadAllText(fname + ".txt").Replace("\r\n", "\n");
+            else {
+                string code = File.ReadAllText(fileName).Replace("\r\n", "\n");
                 Tokenizer tokenizer = new Tokenizer(fname, code);
                 TokenizerResult tokenizerResult = tokenizer.GenerateTokens();
                 if (!tokenizerResult.HasError)
