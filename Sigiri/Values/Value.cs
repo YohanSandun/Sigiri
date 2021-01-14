@@ -27,6 +27,7 @@ namespace Sigiri.Values
         public virtual bool GetAsBoolean() {
             return false;
         }
+        public virtual bool IsBoolean { get { return false; } }
         public Value(ValueType type)
         {
             this.Type = type;

@@ -7,6 +7,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sigiri", "Sigiri\Sigiri.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "system", "system\system.csproj", "{6A0ECF12-4219-417F-A524-E9F1CAA94DF2}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libraries", "libraries", "{E0172552-6346-4E62-9C46-CFF00C6C0E25}"
+	ProjectSection(SolutionItems) = preProject
+		Sigiri\bin\Debug\netcoreapp3.1\File.txt = Sigiri\bin\Debug\netcoreapp3.1\File.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

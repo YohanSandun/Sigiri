@@ -7,6 +7,7 @@ namespace Sigiri.Values
     {
 
         public Assembly Assembly { get; set; }
+        public object Instance { get; set; }
         public Type AsmType { get; set; }
 
         public override string ToString()
@@ -19,7 +20,7 @@ namespace Sigiri.Values
                 MethodInfo methodInfo = AsmType.GetMethod(name);
                 if (methodInfo == null)
                     return new RuntimeResult(new RuntimeError(Position, "Method " + name + " not found in assembly", Context));
-                object output = methodInfo.Invoke(null, args);
+                object output = methodInfo.Invoke(Instance, args);
                 Value value = ParseValue(output, Position, Context);
                 if (value != null)
                     return new RuntimeResult(ParseValue(output, Position, Context));
@@ -33,11 +34,11 @@ namespace Sigiri.Values
                 return new NullValue().SetPositionAndContext(position, context);
             string type = value.GetType().Name;
             if (type.Equals("Double") || type.Equals("Single") || type.Equals("Decimal"))
-                return new FloatValue(value).SetPositionAndContext(position, context));
+                return new FloatValue(value).SetPositionAndContext(position, context);
             if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32") || type.Equals("Int64"))
-                return new IntegerValue(value).SetPositionAndContext(position, context));
+                return new IntegerValue(value).SetPositionAndContext(position, context);
             if (type.Equals("Char") || type.Equals("String"))
-                return new StringValue(value).SetPositionAndContext(position, context));
+                return new StringValue(value).SetPositionAndContext(position, context);
             if (type.Equals("Byte[]"))
                 return ListValue.FromArray((byte[])value).SetPositionAndContext(position,context);
             return null;

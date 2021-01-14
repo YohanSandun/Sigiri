@@ -489,8 +489,18 @@ namespace Sigiri
                     {
                         RuntimeResult result = Visit(callNode.Arguments[i].Item2, context);
                         if (result.HasError) return result;
-                        if (result.Value.Data.GetType().Name.Equals("Double"))
+                        if (result.Value.Type == Values.ValueType.LIST)
+                        {
+                            object[] array = Util.ListToArray(result.Value);
+                            if (array == null)
+                                return new RuntimeResult(new RuntimeError(callNode.Position, "Error while converting list to an array", context));
+                            args.Add(array);
+                        }
+                        else if (result.Value.Data.GetType().Name.Equals("Double"))
                             args.Add(Convert.ToSingle(result.Value.Data));
+                        else if (result.Value.IsBoolean)
+                            args.Add(result.Value.GetAsBoolean());
+                        
                         else
                             args.Add(result.Value.Data);
                     }
@@ -511,7 +521,12 @@ namespace Sigiri
                 {
                     Values.AssemblyValue value = new Values.AssemblyValue();
                     value.Assembly = Assembly.LoadFile(AppContext.BaseDirectory + "\\" + fname + ".dll");
+
                     value.AsmType = value.Assembly.GetType(fname + "." + node.ClassToken.Value.ToString());
+
+                    ConstructorInfo constructor = value.AsmType.GetConstructor(Type.EmptyTypes);
+                    value.Instance =  constructor.Invoke(new object[] { });
+
                     FieldInfo[] fields = value.AsmType.GetFields();
                     for (int j = 0; j < fields.Length; j++)
                     {

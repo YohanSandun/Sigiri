@@ -4,50 +4,114 @@ namespace system
 {
     class IO
     {
-        static FileStream Stream = null;
-        static string fname = "";
+        FileStream Stream = null;
+        string fname = "";
+        string mode = "";
 
-        public static void init(string file, string mode)
+        public void init(string file, string mode_)
         {
             fname = file;
-            openFile(mode);
+            mode = mode_;
+            openFile();
         }
 
-        public static string readAllText()
+        public string readAllText()
         {
             if (Stream == null)
-                openFile("r");
+                openFile();
             byte[] array = new byte[Stream.Length];
             Stream.Read(array, 0, array.Length);
             return System.Text.Encoding.UTF8.GetString(array);
         }
 
-        public static void openFile(string mode)
+        public void openFile()
         {
             if (mode.Equals("r"))
                 Stream = File.OpenRead(fname);
+            else if (mode.Equals("w"))
+                Stream = File.OpenWrite(fname);
+            else if (mode.Equals("rw"))
+                Stream = File.Open(fname, FileMode.OpenOrCreate);
         }
 
-        public static byte[] read(int offset, long count)
+        public byte[] read(int offset, long count)
         {
             if (Stream == null)
-                openFile("r");
+                openFile();
             byte[] buffer = new byte[count];
             Stream.Read(buffer, offset, System.Convert.ToInt32(count));
             return buffer;
         }
 
-        public static void close()
+        public void close()
         {
             if (Stream != null)
                 Stream.Close();
         }
 
-        public static long getLength()
+        public long getLength()
         {
             if (Stream == null)
-                openFile("r");
+                openFile();
             return Stream.Length;
+        }
+
+        public void writeText(string line, bool flush) {
+            if (Stream == null)
+                openFile();
+            byte[] array = System.Text.Encoding.UTF8.GetBytes(line);
+            Stream.Write(array);
+            if (flush)
+                Stream.Flush();
+        }
+
+        public int readByte() {
+            return Stream.ReadByte();
+        }
+
+        public void write(object[] array, bool flush) {
+            if (Stream == null)
+                openFile();
+            byte[] byteArray = new byte[array.Length];
+            for (int i = 0; i < array.Length; i++)
+                byteArray[i] = System.Convert.ToByte(array[i]);
+            Stream.Write(byteArray);
+            if (flush)
+                Stream.Flush();
+        }
+        public void writeAt(object[] array, int offset, bool flush)
+        {
+            if (Stream == null)
+                openFile();
+            byte[] byteArray = new byte[array.Length];
+            for (int i = 0; i < array.Length; i++)
+                byteArray[i] = System.Convert.ToByte(array[i]);
+            Stream.Write(byteArray, offset, byteArray.Length);
+            if (flush)
+                Stream.Flush();
+        }
+
+        public void flush() {
+            Stream.Flush();
+        }
+
+        public void writeByte(byte byt, bool flush) {
+            if (Stream == null)
+                openFile();
+            Stream.WriteByte(byt);
+            if (flush)
+                Stream.Flush();
+        }
+
+        public void seek(int offset, string origin) {
+            if (Stream == null)
+                openFile();
+            if (origin.Equals("c"))
+                Stream.Seek(offset, SeekOrigin.Current);
+            else if (origin.Equals("b"))
+                Stream.Seek(offset, SeekOrigin.Begin);
+            else if (origin.Equals("e"))
+                Stream.Seek(offset, SeekOrigin.End);
         }
     }
 }

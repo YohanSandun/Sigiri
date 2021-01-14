@@ -7,6 +7,9 @@ namespace Sigiri.Values
     class IntegerValue : Value
     {
         private bool asBoolean;
+
+        public override bool IsBoolean => asBoolean;
+
         public IntegerValue(object data, bool asBoolean = false) : base(ValueType.INTEGER)
         {
             Data = data;
