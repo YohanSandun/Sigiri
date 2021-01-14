@@ -20,18 +20,9 @@ namespace Sigiri.Values
                 if (methodInfo == null)
                     return new RuntimeResult(new RuntimeError(Position, "Method " + name + " not found in assembly", Context));
                 object output = methodInfo.Invoke(null, args);
-                if (output == null)
-                    return new RuntimeResult(new NullValue().SetPositionAndContext(Position, Context));
-                string type = output.GetType().Name;
-                Console.WriteLine(type);
-                if (type.Equals("Double") || type.Equals("Single") || type.Equals("Decimal"))
-                    return new RuntimeResult(new FloatValue(output).SetPositionAndContext(Position, Context));
-                if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32") || type.Equals("Int64"))
-                    return new RuntimeResult(new IntegerValue(output).SetPositionAndContext(Position, Context));
-                if (type.Equals("Char") || type.Equals("String"))
-                    return new RuntimeResult(new StringValue(output).SetPositionAndContext(Position, Context));
-                if (type.Equals("Byte[]"))
-                    return new RuntimeResult(ListValue.FromArray((byte[])output).SetPositionAndContext(Position, Context));
+                Value value = ParseValue(output, Position, Context);
+                if (value != null)
+                    return new RuntimeResult(ParseValue(output, Position, Context));
             }
             catch (Exception ex) { return new RuntimeResult(new RuntimeError(Position, "Error while invoking the method '"+name+"' - "+ex.Message+"", Context)); }
             return new RuntimeResult(new RuntimeError(Position, "Error while invoking the method '" + name + "'", Context));
@@ -42,12 +33,14 @@ namespace Sigiri.Values
                 return new NullValue().SetPositionAndContext(position, context);
             string type = value.GetType().Name;
             if (type.Equals("Double") || type.Equals("Single") || type.Equals("Decimal"))
-                return new FloatValue(value).SetPositionAndContext(position, context);
-            if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32") || type.Equals("Long"))
-                return new IntegerValue(value).SetPositionAndContext(position, context);
+                return new FloatValue(value).SetPositionAndContext(position, context));
+            if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32") || type.Equals("Int64"))
+                return new IntegerValue(value).SetPositionAndContext(position, context));
             if (type.Equals("Char") || type.Equals("String"))
-                return new StringValue(value).SetPositionAndContext(position, context);
-            return new NullValue().SetPositionAndContext(position, context);
+                return new StringValue(value).SetPositionAndContext(position, context));
+            if (type.Equals("Byte[]"))
+                return ListValue.FromArray((byte[])value).SetPositionAndContext(position,context);
+            return null;
         }
 
         public AssemblyValue() : base(ValueType.ASSEMBLY)
