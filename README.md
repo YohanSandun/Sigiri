@@ -86,10 +86,51 @@ greet(name:"John")
 ```
 In above code all ways of calling `greet` method, are possible.
 
-#### Loading assemblies of library
+#### Loading assemblies or libraries
 ```sh
 load system.math
 print(math.PI)
 print(math.acos(0))
 ```
 `load` keyword can be used to import another Sigiri source or compiled managed library (.dll or .so) in to our program. In above example we are using `math` class from compiled .NET assembly called `system`. (To use a certain library, that library should exists in program location. In above example I have system.dll file and source code in the same directory.)
+
+#### Operator overloading
+```sh
+class Point {
+    method init(x, y) {
+        this.x = x
+        this.y = y
+    }
+    method + (other) {
+        x = this.x + other.x
+        y = this.y + other.y
+        return Point(x, y)
+    }
+    method > (other) {
+        if this.x > other.x && this.y > other.y:
+            return true
+        return false
+    }
+    method [] (index) {
+        if index==0:
+            return x
+        return y
+    }
+    method [=] (index, value) {
+        if index==0:
+            this.x = value
+        else:
+            this.y = value
+    }
+    method "" (): return "(" + x + ", "+ y +")"
+}
+pointA = Point(10, 20)
+pointB = Point(25, 42)
+
+pointC = pointA + pointB
+print(pointA > pointB)
+print(pointC[0])
+pointA[1] = 55
+print(pointC)
+
+```
