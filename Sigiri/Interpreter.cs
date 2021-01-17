@@ -500,14 +500,27 @@ namespace Sigiri
                             args.Add(Convert.ToSingle(result.Value.Data));
                         else if (result.Value.IsBoolean)
                             args.Add(result.Value.GetAsBoolean());
-                        
+
                         else
                             args.Add(result.Value.Data);
                     }
 
                     return asmVal.Invoke(name, args.ToArray());
                 }
-                else 
+                else if (Util.isPremitiveType(runtimeResult.Value.Type))
+                {
+                    CallNode callNode = (CallNode)node.Node;
+                    List<(string, Values.Value)> args = new List<(string, Values.Value)>();
+                    for (int i = 0; i < callNode.Arguments.Count; i++)
+                    {
+                        RuntimeResult result = Visit(callNode.Arguments[i].Item2, context);
+                        if (result.HasError) return result;
+                        args.Add((callNode.Arguments[i].Item1, result.Value));
+                    }
+                    string name = ((VarAccessNode)callNode.Node).Token.Value.ToString();
+                    return runtimeResult.Value.CallMethod(name, args);
+                }
+                else
                     return VisitCallNode((CallNode)node.Node, runtimeResult.Value.Context, context);
             }
             return Visit(node.Node, runtimeResult.Value.Context);

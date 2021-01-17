@@ -46,6 +46,10 @@ namespace Sigiri
                 { "text", null},
                 { "separator", null}
             }, split));
+
+            BuiltinMethodList.Add("len", new BuiltinMethod(new List<string>() { "value" }, new Dictionary<string, Values.Value>() {
+                { "value", null}
+            }, len));
         }
 
         public static RuntimeResult Execute(string name, List<(string, Values.Value)> args, Position position, Context context) 
@@ -143,6 +147,7 @@ namespace Sigiri
             Values.Value value = context.GetSymbol("value");
             return new RuntimeResult(new Values.StringValue(value.Data.ToString()).SetPositionAndContext(position, context));
         }
+
         static RuntimeResult split(Position position, Context context)
         {
             Values.Value text = context.GetSymbol("text");
@@ -153,6 +158,13 @@ namespace Sigiri
                 elements.Add(new Values.StringValue(array[i]).SetPositionAndContext(position, context));
             return new RuntimeResult(new Values.ListValue(elements).SetPositionAndContext(position,context));
         }
+        static RuntimeResult len(Position position, Context context)
+        {
+            Values.Value value = context.GetSymbol("value");
+            return new RuntimeResult(new Values.IntegerValue(value.GetElementCount()).SetPositionAndContext(position, context));
+        }
+        
+
     }
 
     class BuiltinMethod { 

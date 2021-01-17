@@ -24,70 +24,43 @@ namespace Sigiri.Values
         public object Data { get; set; }
         public Position Position { get; set; }
         public Context Context { get; set; }
-        public virtual bool GetAsBoolean() {
-            return false;
-        }
+        public virtual bool GetAsBoolean() { return false; }
         public virtual bool IsBoolean { get { return false; } }
-        public Value(ValueType type)
-        {
-            this.Type = type;
-        }
+        public Value(ValueType type) { this.Type = type; }
         public Value SetPositionAndContext(Position position, Context context) {
             this.Position = position;
             this.Context = context;
             return this;
         }
-        public abstract RuntimeResult Add(Value other);
-        public abstract RuntimeResult Substract(Value other);
-        public abstract RuntimeResult Multiply(Value other);
-        public abstract RuntimeResult Divide(Value other);
-        public abstract RuntimeResult Modulus(Value other);
-        public abstract RuntimeResult Exponent(Value other);
-        public abstract RuntimeResult BitwiseAnd(Value other);
-        public abstract RuntimeResult BitwiseOr(Value other);
-        public abstract RuntimeResult BitwiseXor(Value other);
-        public abstract RuntimeResult BitwiseComplement();
-        public abstract RuntimeResult LeftShift(Value other);
-        public abstract RuntimeResult RightShift(Value other);
-        public abstract RuntimeResult Equals(Value other);
-        public abstract RuntimeResult NotEquals(Value other);
-        public abstract RuntimeResult LessThan(Value other);
-        public abstract RuntimeResult GreaterThan(Value other);
-        public abstract RuntimeResult LessOrEqual(Value other);
-        public abstract RuntimeResult GreaterOrEqual(Value other);
-        public abstract RuntimeResult BooleanAnd(Value other);
-        public abstract RuntimeResult BooleanOr(Value other);
-        public abstract RuntimeResult BooleanNot();
-
-        public virtual int GetElementCount() {
-            return 0;
-        }
-
-        public virtual RuntimeResult GetElementAt(int index) {
-            return new RuntimeResult(new RuntimeError(Position, "Subscript not supported on this object", Context));
-        }
-
-        public virtual RuntimeResult Abs() {
-            return new RuntimeResult(new RuntimeError(Position, "abs() is not possible on " + Type.ToString().ToLower() + "", Context));
-        }
-
-        public virtual RuntimeResult In(Value other) {
-            return new RuntimeResult(new RuntimeError(Position, "Unsupported operator 'in'", Context));
-        }
-
-        public virtual bool ContainsElement(Value value) {
-            return false;
-        }
-
-        public virtual RuntimeResult Subscript(Value value) {
-            return new RuntimeResult(new RuntimeError(Position, "Subscript not supported on this object", Context));
-        }
-        public virtual RuntimeResult SubscriptAssign(Value index, Value value)
-        {
-            return new RuntimeResult(new RuntimeError(Position, "Subscript not supported on this object", Context));
-        }
-        public override string ToString() {
-            return Data.ToString();
-        }
+        public virtual RuntimeResult Add(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult Substract(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult Multiply(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult Divide(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult Modulus(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult Exponent(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult BitwiseAnd(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult BitwiseOr(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult BitwiseXor(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult BitwiseComplement() { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult LeftShift(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult RightShift(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult Equals(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult NotEquals(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult LessThan(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult GreaterThan(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult LessOrEqual(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult GreaterOrEqual(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult BooleanAnd(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult BooleanOr(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult BooleanNot() { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
+        public virtual RuntimeResult CallMethod(string name, List<(string, Value)> args) { return new RuntimeResult(new RuntimeError(Position, "Not found such a method.", Context)); }
+        public virtual int GetElementCount() { return 0; }
+        public virtual RuntimeResult GetElementAt(int index) { return new RuntimeResult(new RuntimeError(Position, "Subscript not supported on this object", Context)); }
+        public virtual RuntimeResult Abs() { return new RuntimeResult(new RuntimeError(Position, "abs() is not possible on " + Type.ToString().ToLower() + "", Context)); }
+        public virtual RuntimeResult In(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator 'in'", Context)); }
+        public virtual bool ContainsElement(Value value) { return false; }
+        public virtual RuntimeResult Subscript(Value value) { return new RuntimeResult(new RuntimeError(Position, "Subscript not supported on this object", Context)); }
+        public virtual RuntimeResult SubscriptAssign(Value index, Value value) { return new RuntimeResult(new RuntimeError(Position, "Subscript not supported on this object", Context)); }
+        public override string ToString() { return Data != null ? Data.ToString() : Type.ToString(); }
     }
 }

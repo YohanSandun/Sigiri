@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Sigiri.Values
 {
@@ -10,6 +8,28 @@ namespace Sigiri.Values
         public ListValue(List<Value> elemetns) : base(ValueType.LIST)
         {
             this.Elements = elemetns;
+        }
+
+        public void AddElement(Value value) {
+            Elements.Add(value);
+        }
+
+        public override RuntimeResult CallMethod(string name, List<(string, Value)> args)
+        {
+            switch (name) {
+                case "append":
+                    for (int i = 0; i < args.Count; i++)
+                    {
+                        if (args[i].Item2.Type == ValueType.LIST)
+                            Elements.Add(((ListValue)args[i].Item2).Clone());
+                        else 
+                            Elements.Add(args[i].Item2);
+                    }
+                    return new RuntimeResult(this);
+                case "getCount":
+                    return new RuntimeResult(new IntegerValue(Elements.Count).SetPositionAndContext(Position, Context));
+            }
+            return base.CallMethod(name, args);
         }
 
         public override string ToString()
@@ -22,6 +42,11 @@ namespace Sigiri.Values
                     str += ", ";
             }
             return str + "]";
+        }
+
+        public Value Clone() {
+            List<Value> newVals = new List<Value>(Elements);
+            return new ListValue(newVals).SetPositionAndContext(Position, Context);
         }
 
         public override RuntimeResult Subscript(Value value)
@@ -89,51 +114,6 @@ namespace Sigiri.Values
                 return new RuntimeResult(new RuntimeError(Position, "Index out of range", Context));
         }
 
-        public override RuntimeResult Add(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult BitwiseAnd(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult BitwiseComplement()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult BitwiseOr(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult BitwiseXor(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult BooleanAnd(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult BooleanNot()
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult BooleanOr(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult Divide(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
         public override RuntimeResult Equals(Value other)
         {
             if (other.Type == ValueType.LIST) {
@@ -150,61 +130,6 @@ namespace Sigiri.Values
                 }
             }
             return new RuntimeResult(new IntegerValue(0, true).SetPositionAndContext(Position, Context));
-        }
-
-        public override RuntimeResult Exponent(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult GreaterOrEqual(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult GreaterThan(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult LeftShift(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult LessOrEqual(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult LessThan(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult Modulus(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult Multiply(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult NotEquals(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult RightShift(Value other)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override RuntimeResult Substract(Value other)
-        {
-            throw new NotImplementedException();
         }
 
         public override bool ContainsElement(Value value)

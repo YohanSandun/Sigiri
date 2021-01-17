@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sigiri.Values
 {
@@ -21,42 +19,42 @@ namespace Sigiri.Values
                 return new RuntimeResult(new FloatValue((double)Data + (double)other.Data).SetPositionAndContext(Position, Context));
             else if (other.Type == ValueType.INTEGER)
                 return new RuntimeResult(new FloatValue((double)Data + (int)other.Data).SetPositionAndContext(Position, Context));
-            return new RuntimeResult(new RuntimeError(Position, "'+' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'+' is not supported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult BitwiseAnd(Value other)
         {
-            return new RuntimeResult(new RuntimeError(Position, "'&' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'&' is not supported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult BitwiseComplement()
         {
-            return new RuntimeResult(new RuntimeError(Position, "'~' is unsupported for " + Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'~' is not supported for " + Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult BitwiseOr(Value other)
         {
-            return new RuntimeResult(new RuntimeError(Position, "'|' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'|' is not supported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult BitwiseXor(Value other)
         {
-            return new RuntimeResult(new RuntimeError(Position, "'^' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'^' is not supported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult BooleanAnd(Value other)
         {
-            return new RuntimeResult(new RuntimeError(Position, "'and' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'and' is not supported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult BooleanNot()
         {
-            return new RuntimeResult(new RuntimeError(Position, "'not' is unsupported for " + Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'not' is not supported for " + Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult BooleanOr(Value other)
         {
-            return new RuntimeResult(new RuntimeError(Position, "'or' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'or' is not supported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult Divide(Value other)
@@ -65,7 +63,7 @@ namespace Sigiri.Values
                 return new RuntimeResult(new FloatValue((double)Data / (double)other.Data).SetPositionAndContext(Position, Context));
             else if (other.Type == ValueType.INTEGER)
                 return new RuntimeResult(new FloatValue((double)Data / (int)other.Data).SetPositionAndContext(Position, Context));
-            return new RuntimeResult(new RuntimeError(Position, "'/' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'/' is not supported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult Equals(Value other)
@@ -83,7 +81,7 @@ namespace Sigiri.Values
                 return new RuntimeResult(new FloatValue(Math.Pow((double)Data, (double)other.Data)).SetPositionAndContext(Position, Context));
             else if (other.Type == ValueType.INTEGER)
                 return new RuntimeResult(new FloatValue(Math.Pow((double)Data, (int)other.Data)).SetPositionAndContext(Position, Context));
-            return new RuntimeResult(new RuntimeError(Position, "'**' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'**' is not supported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult GreaterOrEqual(Value other)
@@ -106,7 +104,7 @@ namespace Sigiri.Values
 
         public override RuntimeResult LeftShift(Value other)
         {
-            return new RuntimeResult(new RuntimeError(Position, "'<<' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'<<' is not supported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult LessOrEqual(Value other)
@@ -156,7 +154,7 @@ namespace Sigiri.Values
 
         public override RuntimeResult RightShift(Value other)
         {
-            return new RuntimeResult(new RuntimeError(Position, "'>>' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
+            return new RuntimeResult(new RuntimeError(Position, "'>>' is not supported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
 
         public override RuntimeResult Substract(Value other)

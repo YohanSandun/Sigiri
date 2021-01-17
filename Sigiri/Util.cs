@@ -16,5 +16,17 @@
             catch { }
             return null;
         }
+
+        public static bool isPremitiveType(Values.ValueType type) {
+            switch (type) {
+                case Values.ValueType.INTEGER:
+                case Values.ValueType.FLOAT:
+                case Values.ValueType.STRING:
+                case Values.ValueType.LIST:
+                case Values.ValueType.DICTIONARY:
+                    return true;
+            }
+            return false;
+        }
     }
 }
