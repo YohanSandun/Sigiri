@@ -78,10 +78,10 @@ namespace Sigiri
             return new RuntimeResult(new Values.StringValue(node.Token.Value.ToString()).SetPositionAndContext(node.Token.Position, context));
         }
 
-        private RuntimeResult VisitBinaryNode(BinaryNode node, Context context) {
+        private RuntimeResult VisitBinaryNode(BinaryNode node, Context context, Context other = null) {
             RuntimeResult leftResult = Visit(node.LeftNode, context);
             if (leftResult.HasError) return leftResult;
-            RuntimeResult rightResult = Visit(node.RightNode, context);
+            RuntimeResult rightResult = Visit(node.RightNode, other != null ? other : context);
             if (rightResult.HasError) return rightResult;
 
             if (node.OpToken.Type == TokenType.PLUS)
@@ -168,7 +168,7 @@ namespace Sigiri
             Values.Value value = context.GetSymbol(name);
             if (value != null)
                 return new RuntimeResult(value);
-            return new RuntimeResult(new RuntimeError(node.Token.Position, "Variable '" + name + "' not defined", context));
+            return new RuntimeResult(new RuntimeError(node.Token.Position, "Variable '" + name + "' not defined----", context));
         }
 
         private RuntimeResult VisitListNode(ListNode node, Context context) {
@@ -340,8 +340,88 @@ namespace Sigiri
 
         private RuntimeResult VisitMethodNode(MethodNode node, Context context) {
             string name = "anonymous";
-            if (node.Token != null)
-                name = node.Token.Value.ToString();
+            if (node.Token != null) {
+                switch (node.Token.Type) {
+                    case TokenType.IDENTIFIER:
+                        name = node.Token.Value.ToString();
+                        break;
+                    case TokenType.PLUS:
+                        name = "-add-";
+                        break;
+                    case TokenType.MINUS:
+                        name = "-sub-";
+                        break;
+                    case TokenType.MULTIPLY:
+                        name = "-mul-";
+                        break;
+                    case TokenType.DIVIDE:
+                        name = "-div-";
+                        break;
+                    case TokenType.MODULUS:
+                        name = "-mod-";
+                        break;
+                    case TokenType.EXPONENT:
+                        name = "-exp-";
+                        break;
+                    case TokenType.STRING:
+                        name = "-str-";
+                        break;
+                    case TokenType.LEFT_SQB:
+                        name = "-sst-";
+                        break;
+                    case TokenType.LESS_THAN:
+                        name = "-les-";
+                        break;
+                    case TokenType.LESS_TOE:
+                        name = "-lte-";
+                        break;
+                    case TokenType.GREATER_THAN:
+                        name = "-gre-";
+                        break;
+                    case TokenType.GREATER_TOE:
+                        name = "-gte-";
+                        break;
+                    case TokenType.EQUALS_EQUALS:
+                        name = "-eeq-";
+                        break;
+                    case TokenType.NOT_EQUALS:
+                        name = "-neq-";
+                        break;
+                    case TokenType.BITWISE_AND:
+                        name = "-ban-";
+                        break;
+                    case TokenType.BITWISE_OR:
+                        name = "-bor-";
+                        break;
+                    case TokenType.BITWISE_XOR:
+                        name = "-xor-";
+                        break;
+                    case TokenType.COMPLEMENT:
+                        name = "-com-";
+                        break;
+                    case TokenType.EQUALS:
+                        name = "-sse-";
+                        break;
+                    case TokenType.LEFT_SHIFT:
+                        name = "-lsh-";
+                        break;
+                    case TokenType.RIGHT_SHIFT:
+                        name = "-rsh-";
+                        break;
+                    case TokenType.BOOLEAN_AND:
+                        name = "-and-";
+                        break;
+                    case TokenType.BOOLEAN_OR:
+                        name = "-orr-";
+                        break;
+                    case TokenType.BOOLEAN_NOT:
+                        name = "-not-";
+                        break;
+                    case TokenType.IN:
+                        name = "-inn-";
+                        break;
+                }
+            }
             Values.Value method = new Values.MethodValue(name, node.Parameters, node.Body, node.DefaultValues).SetPositionAndContext(node.Position, context);
             if (node.Token != null)
                 context.AddSymbol(name, method);
@@ -522,6 +602,9 @@ namespace Sigiri
                 }
                 else
                     return VisitCallNode((CallNode)node.Node, runtimeResult.Value.Context, context);
+            }
+            else if (node.Node.Type == NodeType.BINARY) {
+                return VisitBinaryNode((BinaryNode)node.Node, runtimeResult.Value.Context, context);
             }
             return Visit(node.Node, runtimeResult.Value.Context);
         }

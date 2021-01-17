@@ -18,6 +18,7 @@ namespace Sigiri.Values
 
         public RuntimeResult Execute(List<(string, Value)> args, Interpreter interpreter) {
             Context context = new Context(this.Name, this.Context);
+            
             if (Parameters.Count != args.Count)
             {
                 if (DefaultValues.Count == 0)

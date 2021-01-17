@@ -37,7 +37,7 @@ namespace Sigiri
             {
                 string message = "Sigiri 1.0.0 ";
                 message += Environment.Is64BitProcess ? "64bit" : "32bit";
-                message += " [Compiled:2020 Jan 14, 13:16:00] running on " + RuntimeInformation.OSDescription;
+                message += " [Compiled:2020 Jan 17, 13:16:00] running on " + RuntimeInformation.OSDescription;
                 message += Environment.Is64BitOperatingSystem ? " x64" : " x86";
                 message += "\nType help for more information.";
                 Console.Write(message + "\n");
@@ -67,6 +67,7 @@ namespace Sigiri
             {
                 Parser parser = new Parser(tokenizerResult.Tokens);
                 ParserResult parserResult = parser.Parse();
+                //Console.WriteLine(parserResult.Node);
                 if (!parserResult.HasError)
                 {
                     Interpreter interpreter = new Interpreter();

@@ -35,5 +35,7 @@ namespace Sigiri
                 return Parent.GetSymbol(name);
             return null;
         }
+
+        
     }
 }

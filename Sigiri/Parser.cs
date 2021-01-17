@@ -22,8 +22,8 @@ namespace Sigiri
         }
 
         private Token Peek(int step = 1) {
-            if (currentTokenIndex + 1 < tokens.Count)
-                return tokens[currentTokenIndex + 1];
+            if (currentTokenIndex + step < tokens.Count)
+                return tokens[currentTokenIndex + step];
             return currentToken;
         }
 
@@ -87,7 +87,7 @@ namespace Sigiri
 
         private ParserResult Attribute(Node baseNode) {
             Advance();
-            ParserResult nodeResult = Expr();
+            ParserResult nodeResult = ArithExpr();
             if (nodeResult.HasError) return nodeResult;
             if (currentToken.Type == TokenType.DOT)
                 return Attribute(new AttributeNode(baseNode, nodeResult.Node));
@@ -433,18 +433,37 @@ namespace Sigiri
             Token token = null;
             List<string> parameters = new List<string>();
             Dictionary<string, Node> defaUltValues = new Dictionary<string, Node>();
-
-            if (currentToken.Type == TokenType.IDENTIFIER)
+            if (currentToken.Type == TokenType.IDENTIFIER
+                || currentToken.Type == TokenType.PLUS || currentToken.Type == TokenType.MINUS
+                || currentToken.Type == TokenType.MULTIPLY || currentToken.Type == TokenType.DIVIDE || currentToken.Type == TokenType.MODULUS
+                || currentToken.Type == TokenType.EXPONENT || currentToken.Type == TokenType.STRING || currentToken.Type == TokenType.IN
+                || currentToken.Type == TokenType.LESS_THAN || currentToken.Type == TokenType.LESS_TOE
+                || currentToken.Type == TokenType.GREATER_THAN || currentToken.Type == TokenType.GREATER_TOE 
+                || currentToken.Type == TokenType.EQUALS_EQUALS || currentToken.Type == TokenType.NOT_EQUALS
+                || currentToken.Type == TokenType.BITWISE_AND || currentToken.Type == TokenType.BITWISE_OR || currentToken.Type == TokenType.BITWISE_XOR || currentToken.Type == TokenType.COMPLEMENT
+                || currentToken.Type == TokenType.LEFT_SHIFT || currentToken.Type == TokenType.RIGHT_SHIFT
+                || currentToken.Type == TokenType.BOOLEAN_AND || currentToken.Type == TokenType.BOOLEAN_OR || currentToken.Type == TokenType.BOOLEAN_NOT)
             {
                 token = currentToken;
                 Advance();
+            } 
+            else if (currentToken.Type == TokenType.LEFT_SQB && Peek().Type == TokenType.RIGHT_SQB) {
+                token = currentToken;
+                Advance(2);
+            }
+            else if (currentToken.Type == TokenType.LEFT_SQB && Peek().Type == TokenType.EQUALS && Peek(2).Type == TokenType.RIGHT_SQB)
+            {
+                Advance();
+                token = currentToken;
+                Advance(2);
+                
             }
             if (currentToken.Type != TokenType.LEFT_PAREN)
                 return new ParserResult(new InvalidSyntaxError(currentToken.Position, "Expected '('"));
             Advance();
             if (currentToken.Type == TokenType.RIGHT_PAREN)
                 Advance();
-            else { 
+            else {  
                 if (currentToken.Type != TokenType.IDENTIFIER)
                     return new ParserResult(new InvalidSyntaxError(currentToken.Position, "Expected an identifer"));
                 string paramName = currentToken.Value.ToString();
@@ -604,6 +623,12 @@ namespace Sigiri
                     return Subscript(new VarAccessNode(token));
                 if (currentToken.Type == TokenType.DOT)
                     return Attribute(new VarAccessNode(token));
+                if (currentToken.Type == TokenType.EQUALS) {
+                    Advance();
+                    ParserResult exprResult = Expr();
+                    if (exprResult.HasError) return exprResult;
+                    return new ParserResult(new VarAssignNode(token, exprResult.Node));
+                }
                 return new ParserResult(new VarAccessNode(token));
             }
             else if (token.Type == TokenType.LEFT_PAREN)
@@ -852,13 +877,6 @@ namespace Sigiri
 
         private ParserResult Expr()
         {
-            if (currentToken.Type == TokenType.IDENTIFIER && Peek().Type == TokenType.EQUALS) {
-                Token token = currentToken;
-                Advance(2);
-                ParserResult exprResult = Expr();
-                if (exprResult.HasError) return exprResult;
-                return new ParserResult(new VarAssignNode(token, exprResult.Node));
-            }
             ParserResult leftResult = CompareExpr();
             if (leftResult.HasError) return leftResult;
             while (currentToken.Type == TokenType.BOOLEAN_AND || currentToken.Type == TokenType.BOOLEAN_OR || currentToken.Type == TokenType.IN)

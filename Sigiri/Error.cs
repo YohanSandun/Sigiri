@@ -56,6 +56,7 @@ namespace Sigiri
                     result += " File '" + position.FileName + "' at Line " + (position.LineNum + 1) + " in " + ctx.Name + result;
                 else
                     result += " in " + ctx.Name + result;
+                result += "\n";
                 position = ctx.Position;
                 ctx = ctx.Parent;
             }
