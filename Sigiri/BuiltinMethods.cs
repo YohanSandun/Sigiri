@@ -8,7 +8,10 @@ namespace Sigiri
     {
 
         public static Dictionary<string, BuiltinMethod> BuiltinMethodList = new Dictionary<string, BuiltinMethod>();
+        public static Dictionary<string, BuiltinMethod> StringMethods = new Dictionary<string, BuiltinMethod>();
+
         static bool initialized = false;
+
         public static void InitializeBuiltinMethods() {
             if (initialized) return;
             initialized = true;
@@ -50,6 +53,12 @@ namespace Sigiri
             BuiltinMethodList.Add("len", new BuiltinMethod(new List<string>() { "value" }, new Dictionary<string, Values.Value>() {
                 { "value", null}
             }, len));
+
+            /* Methods belongs to string objects (not avaiable public) */
+            StringMethods.Add("subString", new BuiltinMethod(new List<string>() { "startIndex", "length" }, new Dictionary<string, Values.Value>() {
+                { "startIndex", new Values.IntegerValue(0) },
+                { "length", new Values.NullValue() }
+            }, str_substr));
         }
 
         public static RuntimeResult Execute(string name, List<(string, Values.Value)> args, Position position, Context context) 
@@ -79,6 +88,33 @@ namespace Sigiri
                 newCtx.AddSymbol(Parameters[i], values[Parameters[i]]);
             }
             return BuiltinMethodList[name].ExecutionMethod(position, newCtx);
+        }
+
+        public static RuntimeResult ExecStringMethod(string name, Values.Value baseVal, List<(string, Values.Value)> args, Position position, Context context)
+        {
+            Context newCtx = new Context(name, context);
+            Dictionary<string, Values.Value> values = new Dictionary<string, Values.Value>(StringMethods[name].DefaultValues);
+            List<string> Parameters = StringMethods[name].Parameters;
+            for (int i = 0; i < args.Count; i++)
+            {
+                if (values.ContainsKey(args[i].Item1))
+                {
+                    values[args[i].Item1] = args[i].Item2;
+                }
+                else if (args[i].Item1.Equals(""))
+                {
+                    values[Parameters[i]] = args[i].Item2;
+                }
+                else
+                    return new RuntimeResult(new RuntimeError(position, "Unknown parameter name '" + args[i].Item1 + "'", context));
+            }
+            for (int i = 0; i < Parameters.Count; i++)
+            {
+                if (values[Parameters[i]] == null)
+                    return new RuntimeResult(new RuntimeError(position, "Arguments mismatch for '" + name + "'", context));
+                newCtx.AddSymbol(Parameters[i], values[Parameters[i]]);
+            }
+            return StringMethods[name].ExecutionMethod2(baseVal, position, newCtx);
         }
 
         static RuntimeResult print(Position position, Context context)
@@ -158,12 +194,32 @@ namespace Sigiri
                 elements.Add(new Values.StringValue(array[i]).SetPositionAndContext(position, context));
             return new RuntimeResult(new Values.ListValue(elements).SetPositionAndContext(position,context));
         }
+
         static RuntimeResult len(Position position, Context context)
         {
             Values.Value value = context.GetSymbol("value");
             return new RuntimeResult(new Values.IntegerValue(value.GetElementCount()).SetPositionAndContext(position, context));
         }
-        
+
+        static RuntimeResult str_substr(Values.Value value, Position position, Context context) {
+            Values.Value start = context.GetSymbol("startIndex");
+            Values.Value length = context.GetSymbol("length");
+            if (start.Type != Values.ValueType.INTEGER)
+                return new RuntimeResult(new RuntimeError(position, "startIndex must be an integer. provided " + start.Type.ToString().ToLower(), context));
+            if (length.Type != Values.ValueType.NULL && length.Type != Values.ValueType.INTEGER)
+                return new RuntimeResult(new RuntimeError(position, "length must be an integer or null. provided " + start.Type.ToString().ToLower(), context));
+            string str = value.Data.ToString();
+            int i_start = Convert.ToInt32(start.Data);
+            int i_len = str.Length - i_start;
+            if (length.Type == Values.ValueType.INTEGER)
+                i_len = Convert.ToInt32(length.Data);
+            try
+            {
+                return new RuntimeResult(new Values.StringValue(str.Substring(i_start, i_len)).SetPositionAndContext(position, context));
+            }
+            catch { }
+            return new RuntimeResult(new RuntimeError(position, "Index out of range.", context));
+        }
 
     }
 
@@ -171,11 +227,18 @@ namespace Sigiri
         public List<string> Parameters { get; set; }
         public Dictionary<string, Values.Value> DefaultValues { get; set; }
         public Func<Position,Context,RuntimeResult> ExecutionMethod { get; set; }
+        public Func<Values.Value, Position, Context, RuntimeResult> ExecutionMethod2 { get; set; }
         public BuiltinMethod(List<string> parameters, Dictionary<string, Values.Value> defValues, Func<Position, Context, RuntimeResult> execMethod)
         {
             this.DefaultValues = defValues;
             this.Parameters = parameters;
             this.ExecutionMethod = execMethod;
+        }
+        public BuiltinMethod(List<string> parameters, Dictionary<string, Values.Value> defValues, Func<Values.Value, Position, Context, RuntimeResult> execMethod)
+        {
+            this.DefaultValues = defValues;
+            this.Parameters = parameters;
+            this.ExecutionMethod2 = execMethod;
         }
     }
 }

@@ -40,8 +40,29 @@ namespace Sigiri.Values
                 case "getLength":
                     return new RuntimeResult(new IntegerValue(Data.ToString().Length).SetPositionAndContext(Position, Context));
                 case "subString":
-
-                    break;
+                    return BuiltinMethods.ExecStringMethod(name, this, args, Position, Context);
+                case "toUpper":
+                    return new RuntimeResult(new StringValue(Data.ToString().ToUpper()).SetPositionAndContext(Position, Context));
+                case "toLower":
+                    return new RuntimeResult(new StringValue(Data.ToString().ToLower()).SetPositionAndContext(Position, Context));
+                case "trim":
+                    return new RuntimeResult(new StringValue(Data.ToString().Trim()).SetPositionAndContext(Position, Context));
+                case "trimEnd":
+                    return new RuntimeResult(new StringValue(Data.ToString().TrimEnd()).SetPositionAndContext(Position, Context));
+                case "trimStart":
+                    return new RuntimeResult(new StringValue(Data.ToString().TrimStart()).SetPositionAndContext(Position, Context));
+                case "clone":
+                    return new RuntimeResult(new StringValue(Data).SetPositionAndContext(Position, Context));
+                case "startsWith":
+                    if (args.Count != 1)
+                        return new RuntimeResult(new RuntimeError(Position, "Argument count mismatch for method startsWith()", Context));
+                    string val = args[0].Item2.Data.ToString();
+                    return new RuntimeResult(Data.ToString().StartsWith(val) ? new IntegerValue(1,true).SetPositionAndContext(Position, Context) : new IntegerValue(0,true).SetPositionAndContext(Position, Context));
+                case "endsWith":
+                    if (args.Count != 1)
+                        return new RuntimeResult(new RuntimeError(Position, "Argument count mismatch for method endsWith()", Context));
+                    string val1 = args[0].Item2.Data.ToString();
+                    return new RuntimeResult(Data.ToString().EndsWith(val1) ? new IntegerValue(1,true).SetPositionAndContext(Position, Context) : new IntegerValue(0,true).SetPositionAndContext(Position, Context));
             }
             return base.CallMethod(name, args);
         }
