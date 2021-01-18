@@ -238,7 +238,7 @@ print(math.acos(0))
 `load` keyword can be used to import another Sigiri source or compiled managed library (.dll or .so) in to our program. In above example we are using `math` class from compiled .NET assembly called `system`. (To use a certain library, that library should exists in program location. In above example I have system.dll file and source code in the same directory.)
 
 ### Operator overloading
-Every operator can be overloaded by providing an method in a class.
+Every operator can be overloaded by providing a method within the class.
 
 | Operator | Description            |             Syntax            |
 |:--------:|------------------------|:-----------------------------:|
