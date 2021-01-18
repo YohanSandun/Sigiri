@@ -180,5 +180,40 @@ namespace Sigiri.Values
         {
             return OperatorOverload("-inn-", other);
         }
+        public override int GetElementCount()
+        {
+            RuntimeResult result = OperatorOverload("$len$");
+            if (result.HasError) { 
+                Console.WriteLine(result.Error);
+                return 0;
+            }
+            if (result.Value.Type != ValueType.INTEGER)
+            {
+                Console.WriteLine("RuntimeError: $len$ method should return an integer not " + result.Value.Type.ToString().ToLower());
+                return 0;
+            }
+            return Convert.ToInt32(result.Value.Data);
+        }
+
+        public override bool GetAsBoolean()
+        {
+            RuntimeResult result = OperatorOverload("$bool$");
+            if (result.HasError)
+            {
+                Console.WriteLine(result.Error);
+                return false;
+            }
+            if (result.Value.Type != ValueType.INTEGER)
+            {
+                Console.WriteLine("RuntimeError: $bool$ method should return a boolean or an integer not " + result.Value.Type.ToString().ToLower());
+                return false;
+            }
+            return Convert.ToInt32(result.Value.Data) == 0 ? false : true;
+        }
+
+        public override RuntimeResult GetElementAt(int index)
+        {
+            return OperatorOverload("-sst-", new IntegerValue(index).SetPositionAndContext(Position, Context));
+        }
     }
 }
