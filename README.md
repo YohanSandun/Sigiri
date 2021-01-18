@@ -3,7 +3,28 @@ Sigiri is a simple, object-oriented, interpreted programming laguage. Designed f
 
 **Note:** Following documentation is specialized for this repository.
 
-#### Highlights
+### Requirements
+- .NET Core 3.1 or higher
+
+### Compiling from source
+- Microsoft Windows
+<br>Open Visual Studio 2019 and choose clone git repository. Then copy and paste this link:https://github.com/YohanSandun/Sigiri and click on clone button. It should clone the repository. Then simply right click on the solution and choose Rebuild. It will rebuild the project and generate necessary binaries for you.<br>If youre plan to use libraries: Makesure to copy all the files from libaries/ directory to your bin\Debug\netcoreapp3.1\ directory where Sigiti.exe located. And check whether that `system.dll` file exists on same bin/ directory. It should be there if build process was success. If it was not there, then check Sigiri\system\bin\Debug\netcoreapp3.1\ folder and copy system.dll into the same location you copied files from libraris/ directory.
+
+- Linux based systems
+<br>Use following command to clone the repository.
+```sh
+git clone https://github.com/YohanSandun/Sigiri
+```
+Other instructions comming soon...
+
+- OSX
+<br>Use following command to clone the repository.
+```sh
+git clone https://github.com/YohanSandun/Sigiri
+```
+Other instructions comming soon...
+
+### Highlights
 - Object-Oriented programming
 - Dynamically typed
 - Can interface managed assemblies (.dll/.so)
