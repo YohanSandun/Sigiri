@@ -9,12 +9,141 @@ Sigiri is a simple, object-oriented, interpreted programming laguage. Designed f
 - Can interface managed assemblies (.dll/.so)
 - Cross-Platform (Source can be compiled on Windows,Linux, and OSX using .NET Core)
 
-#### Hello world
-Hello world code is identical to Python :D
+### Built-in data types
+- `integer`: can hold a positive or negative integer number (default size is 4 bytes)
+- `boolean`: subtype of integer. 1 and 0 represented as `true` and `false`
+- `float`: can hold a floating point number (default size is 8 bytes)
+- `string`: can hold character sequence. denoted by double quotes ("Hello") or single quotes ('Hello')
+- `list`: can hold sequence of objects of any type. denoted by square brackets ([1, 2, 3])
+- `dictionary`: can hold collection of key:value pairs. denoted by curly braces ({'a':10, 'b':20})
+---------------------------------
+
+### Arithmetic operators
+Below are the Arithmetic operators:
+| Operator |                               Description                              | Syntax |
+|:--------:|:----------------------------------------------------------------------:|:------:|
+|     +    | Addition: Adds two operands                                            |   a+b  |
+|     -    | Subtraction: Subtract second operand from first one                    |   a-b  |
+|     *    | Multiplication: Multiply two operands                                  |   a*b  |
+|     /    | Division: Divide first operand from second one                         |   a/b  |
+|     %    | Modulus: Divide first operand from second one and return the remainder |   a%b  |
+|    **    | Exponent: Raise first operand to the power of second operand           |  a**b  |
+
+---------------------------------
+### Truth value
+Truth value testing returns `false` only in few scenarios,
+1. If the result is `null` or `false`
+2. If the result is zero (0, 0.0)
+3. Empty sequences and collections ("", '', [], {})
+4. If user defined truth value testing method(`$bool$`) returns `false` or `$len$` method returns 0
+
+---------------------------------
+### Logical operators
+Below are the logical operators:
+| Operator |                Description               | Syntax 1 | Syntax 2 |
+|:--------:|:----------------------------------------:|:--------:|----------|
+|    Or    | Returns true if either operands are true |  a or b  | a \|\| b |
+|    And   | Returns true if both operands are true   |  a and b |  a && b  |
+|    Not   | Returns true if operand is false         |   not a  |    !a    |
+
+---------------------------------
+### Bitwise operators
+Below are the bitwise operators:
+| Operator |                                        Description                                        | Syntax 1 |
+|:--------:|:-----------------------------------------------------------------------------------------:|:--------:|
+|     &    | Bitwise AND: Perform bitwise AND between two operands                                     |   a & b  |
+|    \|    | Bitwise OR: Perform bitwise OR between two operands                                       |  a \| b  |
+|     ^    | Bitwise XOR: Perform bitwise XOR between two operands                                     |   a ^ b  |
+|     ~    | Bitwise Complement: Perform bitwise complement on a operand                               |    ~a    |
+|    <<    | Left Shift: Shift first operand to the left by number of bits defined in second operand   |  a << b  |
+|    >>    | Right Shift: Shift first operand to the right by number of bits defined in second operand |  a >> b  |
+
+---------------------------------
+
+### Comparison operators
+Below are the comparison operators:
+| Operator |                            Description                           | Syntax |
+|:--------:|:----------------------------------------------------------------:|:------:|
+|    ==    | True if operands are equal or identical                          | a == b |
+|    !=    | True if operands are not equals                                  | a != b |
+|     <    | True if left side operand is less than right side                |  a < b |
+|     >    | True if left side operand is greater than right side             |  a > b |
+|    <=    | True if left side operand is greater than or equal to right side | a <= b |
+|    >=    | True if left side operand is less than or equal to right side    | a >= b |
+|    in    | True if left side operand is contains in right side operand      | a >= b |
+
+---------------------------------
+### Operator precedence
+Ordered by decending priority
+| Precedence | Associativity |         Operator         |            Description            |
+|:----------:|---------------|:------------------------:|:---------------------------------:|
+|   Highest  | Left to Right |            ()            | Parenthesis                       |
+|      .     | Right to Left |            **            | Exponent                          |
+|      .     | Left to Right |             ~            | Complement                        |
+|      .     | Left to Right |          +a, -b          | Positive, Negative                |
+|      .     | Left to Right |          *, /, %         | Multiplication, Division, Modulus |
+|      .     | Left to Right |           +, -           | Addition, Subtraction             |
+|      .     | Left to Right |          <<, >>          | Left shift, Right shift           |
+|      .     | Left to Right |             &            | Bitwise AND                       |
+|      .     | Left to Right |             ^            | Bitwise XOR                       |
+|      .     | Left to Right |            \|            | Bitwise OR                        |
+|      .     | Left to Right | ==, !=, >, <, >=, <=, in | Comparison operators              |
+|      .     | Left to Right |          not, !          | Boolean NOT                       |
+|      .     | Left to Right |          and, &&         | Boolean AND                       |
+|   Lowest   | Left to Right |         or, \|\|         | Boolean OR                        |
+
+---------------------------------
+### Buit-in methods
+- `print(value='', end='\n')` : print an object to the standard output stream.
+```sh
+print("Hello world!")
+print("Hello world!", "\n")
+print(123, end:" ")
+print()
+```
+- `input(prompt='')` : read a line from the standard input stream. if prompt is provided, it will printed to the stream first.
+```sh
+name = input("Enter your name: ")
+name = input()
+```
+- `abs(value)` : returns absolute value of an integer or a float.
+```sh
+value = abs(-10)
+```
+- `char(value)` : returns character of provided ASCII code.
+```sh
+c = char(97)
+```
+- `toInt(value, fromBase=10)` : convert provided value in to an integer.
+```sh
+dec = toInt("100")
+hex = toInt("0xFF1", 16)
+bin = toInt("10110", 2)
+oct = toInt("723", 8)
+```
+- `toFloat(value)` : convert provided value in to a floating point value
+```sh
+f = toFloat("1.7e+3")
+```
+- `toStr(value)` : convert provided value in to a string
+```sh
+str = toStr(10)
+```
+- `split(text, separator)` : break provided text in to sub-strings using separator and returns a list of strings.
+```sh
+words = split("Hi Hello Sigiri Language", " ")
+```
+- `len(value)` : returns the count of elements in a object. for user defined classes use `$len$` method to override this.
+```sh
+count = len([1, 2, 3, 4])
+count = len("Hello world!")
+```
+### Hello world
+Hello world program looks like a Python program :D
 ```sh
 print("Hello world!")
 ```
-#### Method example
+### Method example
 ```sh
 method factorial(n) {
     if n == 0 {
@@ -29,7 +158,7 @@ Above code can be written as below. Both codes give same output.
 method factorial(n): if n == 0: return 1 else: return n * factorial(n - 1)
 print(factorial(5))
 ```
-#### Class example
+### Class example
 ```sh
 class Point {
     method init(x, y) {
@@ -44,7 +173,7 @@ In above code `init` method is the constructor of the `Point` class. Constructor
 `this` keyword is used to access the current instance of the class. 
 Methods and attributes of a class can be accessd or modified using `.` operator.
 
-#### Inherit example
+### Inherit example
 ```sh
 calss Animal {
     method init(kind) {
@@ -73,7 +202,7 @@ myDog.makeSound()
 In above code `Animal` class is the super/parent class. Other two classes are inherited from that super class. `base` keyword is used to access the super class instance.
 `makeSound()` method calling on `myCat` object will invoke the **overrided** `makeSound()` method defined in the `Cat` class and it will output "Meow Meow". `makeSound()` method calling on `myDog` object will invoke the `makeSound()` method defined in the parent `Animal` class and it will output "Grrrrrrr".
 
-#### Default values for arguments
+### Default values for arguments
 ```sh
 method greet(name="NoOne", msg="Hello, ") {
     print(msg + name)
@@ -86,7 +215,7 @@ greet(name:"John")
 ```
 In above code all ways of calling `greet` method, are possible.
 
-#### Loading assemblies or libraries
+### Loading assemblies or libraries
 ```sh
 load system.math
 print(math.PI)
@@ -94,7 +223,7 @@ print(math.acos(0))
 ```
 `load` keyword can be used to import another Sigiri source or compiled managed library (.dll or .so) in to our program. In above example we are using `math` class from compiled .NET assembly called `system`. (To use a certain library, that library should exists in program location. In above example I have system.dll file and source code in the same directory.)
 
-#### Operator overloading
+### Operator overloading
 ```sh
 class Point {
     method init(x, y) {
