@@ -1,5 +1,5 @@
 # Sigiri
-Sigiri is a simple, object-oriented, interpreted programming laguage. Designed for fun. Due to performance issues and platform compatibility issues, this project will also get developed using C++ [here.](https://github.com/YohanSandun/CSigiri) Both repositories ([Sigiri](https://github.com/YohanSandun/Sigiri) and [CSigiri](https://github.com/YohanSandun/CSigiri)) will continue to develop simultaneously. Those who are not familiar with C++ can follow on this repository. 
+Sigiri is a simple, object-oriented, interpreted programming laguage. Designed for fun. Due to performance issues and platform compatibility issues, this project will also get developed using C++ in [here.](https://github.com/YohanSandun/CSigiri) Both repositories ([Sigiri](https://github.com/YohanSandun/Sigiri) and [CSigiri](https://github.com/YohanSandun/CSigiri)) will continue to develop simultaneously. Those who are not familiar with C++ can follow on this repository. 
 
 **Note:** Following documentation is specialized for this repository.
 
