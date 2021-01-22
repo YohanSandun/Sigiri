@@ -18,7 +18,7 @@ Sigiri is a simple, object-oriented, interpreted programming laguage. Designed f
 - `integer`: can hold a positive or negative integer number (default size is 4 bytes)
 - `long`: can hold a positive or negative integer number (default size is 8 bytes)
 - `big`: can hold any positive or negative number (arbitrary-precision signed number)
-- `complex`: can hold complex numbers (x+yi)
+- [`complex`](https://github.com/YohanSandun/Sigiri/blob/master/docs/ComplexNumbers.md): can hold complex numbers (x+yi)
 - `float`: can hold a floating point number (default size is 8 bytes)
 - `string`: can hold character sequence. denoted by double quotes ("Hello") or single quotes ('Hello')
 - `list`: can hold sequence of objects of any type. denoted by square brackets ([1, 2, 3])
