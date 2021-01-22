@@ -6,17 +6,6 @@ Sigiri is a simple, object-oriented, interpreted programming laguage. Designed f
 ### Requirements
 - .NET Core 3.1 or higher
 
-### Compiling from source
-- Microsoft Windows
-<br>Open Visual Studio 2019 and choose clone git repository. Then copy and paste this link:https://github.com/YohanSandun/Sigiri and click on clone button. It should clone the repository. Then simply right click on the solution and choose Rebuild. It will rebuild the project and generate necessary binaries for you.<br><br>If youre plan to use libraries: Makesure to copy all the files from libaries/ directory to your bin\Debug\netcoreapp3.1\ directory where Sigiti.exe located. And check whether that `system.dll` file exists on same bin/ directory. It should be there if build process was success. If it was not there, then check Sigiri\system\bin\Debug\netcoreapp3.1\ folder and copy system.dll into the same location you copied files from libraris/ directory.
-
-- Linux Based and OSX
-<br>Use following command to clone the repository.
-```sh
-git clone https://github.com/YohanSandun/Sigiri
-```
-Other instructions comming soon...
-
 ### Highlights
 - Object-Oriented programming
 - Dynamically typed
@@ -24,8 +13,11 @@ Other instructions comming soon...
 - Cross-Platform (Source can be compiled on Windows,Linux, and OSX using .NET Core)
 
 ### Built-in data types
-- `integer`: can hold a positive or negative integer number (default size is 4 bytes)
 - `boolean`: subtype of integer. 1 and 0 represented as `true` and `false`
+- `integer`: can hold a positive or negative integer number (default size is 4 bytes)
+- `long`: can hold a positive or negative integer number (default size is 8 bytes)
+- `big`: can hold any positive or negative number (arbitrary-precision signed number)
+- `complex`: can hold complex numbers (x+yi)
 - `float`: can hold a floating point number (default size is 8 bytes)
 - `string`: can hold character sequence. denoted by double quotes ("Hello") or single quotes ('Hello')
 - `list`: can hold sequence of objects of any type. denoted by square brackets ([1, 2, 3])
@@ -47,7 +39,7 @@ Below are the Arithmetic operators:
 ### Truth value
 Truth value testing returns `false` only in few scenarios,
 1. If the result is `null` or `false`
-2. If the result is zero (0, 0.0)
+2. If the result is zero (0, 0.0, 0+0i)
 3. Empty sequences and collections ("", '', [], {})
 4. If user defined truth value testing method(`$bool$`) returns `false` or `$len$` method returns 0
 
@@ -120,7 +112,7 @@ print()
 name = input("Enter your name: ")
 name = input()
 ```
-- `abs(value)` : returns absolute value of an integer or a float.
+- `abs(value)` : returns absolute value of an object.
 ```sh
 value = abs(-10)
 ```
