@@ -1,5 +1,5 @@
 # Sigiri
-Sigiri is a simple, object-oriented, interpreted programming laguage. Designed for fun. Due to performance issues and platform compatibility issues, this project will also get developed using C++ [here.](https://github.com/YohanSandun/CSigiri) Both repositories ([Sigiri](https://github.com/YohanSandun/Sigiri) and [CSigiri](https://github.com/YohanSandun/CSigiri)) will continue to develop simultaneously. Those who are not familiar with C++ can follow on this repository. 
+Sigiri is a simple, object-oriented, interpreted programming laguage. Designed for fun. Due to performance issues and platform compatibility issues, this project will also get developed using C++ in [here.](https://github.com/YohanSandun/CSigiri) Both repositories ([Sigiri](https://github.com/YohanSandun/Sigiri) and [CSigiri](https://github.com/YohanSandun/CSigiri)) will continue to develop simultaneously. Those who are not familiar with C++ can follow on this repository. 
 
 **Note:** Following documentation is specialized for this repository.
 
@@ -238,6 +238,38 @@ print(math.acos(0))
 `load` keyword can be used to import another Sigiri source or compiled managed library (.dll or .so) in to our program. In above example we are using `math` class from compiled .NET assembly called `system`. (To use a certain library, that library should exists in program location. In above example I have system.dll file and source code in the same directory.)
 
 ### Operator overloading
+Every operator can be overloaded by providing a method within the class.
+
+| Operator | Description            |             Syntax            |
+|:--------:|------------------------|:-----------------------------:|
+|     +    | Addition               |      method + (other) { }     |
+|     -    | Subtraction            |      method - (other) { }     |
+|     *    | Multiplication         |      method * (other) { }     |
+|     /    | Division               |      method / (other) { }     |
+|     %    | Modulus                |      method % (other) { }     |
+|    **    | Exponent               |     method ** (other) { }     |
+|     <    | Less than              |      method < (other) { }     |
+|     >    | Greater than           |      method > (other) { }     |
+|    <=    | Less than or equals    |     method <= (other) { }     |
+|    >=    | Greater than or equals |     method >= (other) { }     |
+|    ==    | Equals                 |     method == (other) { }     |
+|    !=    | Not Equals             |     method != (other) { }     |
+|     &    | Bitwise AND            |      method & (other) { }     |
+|    \|    | Bitwise OR             |     method \| (other) { }     |
+|     ^    | Bitwise XOR            |      method ^ (other) { }     |
+|     ~    | Bitwise Complement     |        method ~ () { }        |
+|    <<    | Left Shift             |     method << (other) { }     |
+|    >>    | Right Shift            |     method >> (other) { }     |
+|  and, && | Boolean AND            |     method && (other) { }     |
+| or, \|\| | Boolean OR             |    method \|\| (other) { }    |
+|  not, !  | Boolean NOT            |        method ! () { }        |
+|    in    | Contains               |     method in (other) { }     |
+|    []    | Subscript              |     method [] (index) { }     |
+|    [=]   | Subscript Assign       | method [=] (index, value) { } |
+|    ""    | Convert to String      |        method "" () { }       |
+|   $len$  | Get element count      |      method $len$ () { }      |
+|  $bool$  | Get as Boolean         |      method $bool$ () { }     |
+
 ```sh
 class Point {
     method init(x, y) {
