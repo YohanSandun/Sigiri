@@ -48,7 +48,7 @@ math.ccos(c)
 - `cIsNan(value)` : Returns true if value is not finite nor infinite.
 - `clog(value)` : The base `e` logarithm of value.
 - `clog(value, baseValue)` : The logarithm of value in baseValue.
-- `log10(value)` : The base-10 logarithm of value.
+- `clog10(value)` : The base-10 logarithm of value.
 - `cnegate(value)` : Both real and imaginary parts of value are multiplied by -1.
 - `cpower(value, power)` : The value is raised to the value of power.
 - `creci(value)` : Reciprocal of value.
