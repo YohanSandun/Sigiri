@@ -12,11 +12,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libraries", "libraries", "{
 		Sigiri\bin\Debug\netcoreapp3.1\File.txt = Sigiri\bin\Debug\netcoreapp3.1\File.txt
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{F03944AA-E025-4635-A824-355B76AF7653}"
-	ProjectSection(SolutionItems) = preProject
-		ComplexNumbers.md = ComplexNumbers.md
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
