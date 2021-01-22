@@ -47,8 +47,8 @@ namespace Sigiri.Values
         {
             System.Numerics.Complex complex = (System.Numerics.Complex)Data;
             if (complex.Real != 0)
-                return complex.Real + "+" + complex.Imaginary + "i";
-            return complex.Imaginary + "i";
+                return "(" + complex.Real + "+" + complex.Imaginary + "i)";
+            return "(" + complex.Imaginary + "i)";
         }
 
         public override RuntimeResult In(Value other)
@@ -78,7 +78,7 @@ namespace Sigiri.Values
             else if (other.Type == ValueType.INT64)
                 return new RuntimeResult(new ComplexValue((System.Numerics.Complex)Data + (long)other.Data).SetPositionAndContext(Position, Context));
             else if (other.Type == ValueType.STRING)
-                return new RuntimeResult(new StringValue("(" + ToString() + other.Data.ToString() + ")").SetPositionAndContext(Position, Context));
+                return new RuntimeResult(new StringValue(ToString() + other.Data.ToString()).SetPositionAndContext(Position, Context));
             else if (other.Type == ValueType.FLOAT)
                 return new RuntimeResult(new ComplexValue((System.Numerics.Complex)Data + (double)other.Data).SetPositionAndContext(Position, Context));
             else if (other.Type == ValueType.COMPLEX)

@@ -63,6 +63,7 @@ namespace Sigiri.Values
             if (value == null)
                 return new NullValue().SetPositionAndContext(position, context);
             string type = value.GetType().Name;
+            
             if (type.Equals("Double") || type.Equals("Single") || type.Equals("Decimal"))
                 return new FloatValue(value).SetPositionAndContext(position, context);
             if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32") || type.Equals("Int64"))
@@ -73,6 +74,8 @@ namespace Sigiri.Values
                 return ListValue.FromArray((byte[])value).SetPositionAndContext(position,context);
             if (type.Equals("Complex"))
                 return new ComplexValue(value).SetPositionAndContext(position, context);
+            if (type.Equals("BigInteger"))
+                return new BigInt(value).SetPositionAndContext(position, context);
             return null;
         }
 

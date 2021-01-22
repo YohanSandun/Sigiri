@@ -27,7 +27,9 @@ namespace Sigiri.Values
                 if (toType == ValueType.BIGINTEGER)
                     return new BigInt(System.Numerics.BigInteger.Parse(Data.ToString())).SetPositionAndContext(Position, Context);
                 if (toType == ValueType.FLOAT)
-                    return new BigInt(Convert.ToDouble(Data)).SetPositionAndContext(Position, Context);
+                    return new FloatValue(Convert.ToDouble(Data)).SetPositionAndContext(Position, Context);
+                if (toType == ValueType.COMPLEX)
+                    return new ComplexValue(Convert.ToDouble(Data), 0).SetPositionAndContext(Position, Context);
             }
             catch { }
             return null;
@@ -120,7 +122,15 @@ namespace Sigiri.Values
             else if (other.Type == ValueType.COMPLEX)
                 return new RuntimeResult(new ComplexValue(System.Numerics.Complex.Pow((System.Numerics.Complex)other.Data, Convert.ToDouble(Data))).SetPositionAndContext(Position, Context));
             else if (other.Type == ValueType.FLOAT)
+            {
+                double exp = (double)other.Data;
+                if ((int)Data < 0 && Math.Floor(exp) != exp) {
+                    Value complex = Cast(ValueType.COMPLEX);
+                    if (complex != null)
+                        return complex.Exponent(other);
+                }
                 return new RuntimeResult(new FloatValue(Math.Pow((int)Data, (double)other.Data)).SetPositionAndContext(Position, Context));
+            }
             return new RuntimeResult(new RuntimeError(Position, "'**' is unsupported between " + Type.ToString().ToLower() + " and " + other.Type.ToString().ToLower(), Context));
         }
         public override RuntimeResult Modulus(Value other)

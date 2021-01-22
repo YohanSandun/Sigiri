@@ -13,6 +13,24 @@ namespace Sigiri.Values
             double data = (double)Data;
             return data < 0 ? new RuntimeResult(new IntegerValue(data * -1).SetPositionAndContext(Position, Context)) : new RuntimeResult(new IntegerValue(data).SetPositionAndContext(Position, Context));
         }
+        public override Value Cast(ValueType toType)
+        {
+            try
+            {
+                if (toType == ValueType.INTEGER)
+                    return new IntegerValue(Convert.ToInt32(Data)).SetPositionAndContext(Position, Context);
+                if (toType == ValueType.INT64)
+                    return new Int64Value(Convert.ToInt64(Data)).SetPositionAndContext(Position, Context);
+                if (toType == ValueType.BIGINTEGER)
+                    return new BigInt(System.Numerics.BigInteger.Parse(Data.ToString())).SetPositionAndContext(Position, Context);
+                if (toType == ValueType.FLOAT)
+                    return new FloatValue(Data).SetPositionAndContext(Position, Context);
+                if (toType == ValueType.COMPLEX)
+                    return new ComplexValue((double)Data, 0).SetPositionAndContext(Position, Context);
+            }
+            catch { }
+            return null;
+        }
 
         public override RuntimeResult In(Value other)
         {
@@ -89,7 +107,16 @@ namespace Sigiri.Values
         public override RuntimeResult Exponent(Value other)
         {
             if (other.Type == ValueType.FLOAT)
+            {
+                double exp = (double)other.Data;
+                if ((double)Data < 0 && Math.Floor(exp) != exp)
+                {
+                    Value complex = Cast(ValueType.COMPLEX);
+                    if (complex != null)
+                        return complex.Exponent(other);
+                }
                 return new RuntimeResult(new FloatValue(Math.Pow((double)Data, (double)other.Data)).SetPositionAndContext(Position, Context));
+            }
             else if (other.Type == ValueType.INTEGER)
                 return new RuntimeResult(new FloatValue(Math.Pow((double)Data, (int)other.Data)).SetPositionAndContext(Position, Context));
             else if (other.Type == ValueType.INT64)
