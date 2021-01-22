@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Sigiri.Values
 {
@@ -8,6 +6,9 @@ namespace Sigiri.Values
     {
         NULL,
         INTEGER,
+        INT64,
+        BIGINTEGER,
+        COMPLEX,
         FLOAT,
         STRING,
         LIST,
@@ -24,6 +25,7 @@ namespace Sigiri.Values
         public object Data { get; set; }
         public Position Position { get; set; }
         public Context Context { get; set; }
+        public bool TypeDefined { get; set; } = false;
         public virtual bool GetAsBoolean() { return false; }
         public virtual bool IsBoolean { get { return false; } }
         public Value(ValueType type) { this.Type = type; }
@@ -32,6 +34,7 @@ namespace Sigiri.Values
             this.Context = context;
             return this;
         }
+        public virtual Value Cast(ValueType toType) { return null; }
         public virtual RuntimeResult Add(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
         public virtual RuntimeResult Substract(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
         public virtual RuntimeResult Multiply(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
@@ -54,6 +57,7 @@ namespace Sigiri.Values
         public virtual RuntimeResult BooleanOr(Value other) { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
         public virtual RuntimeResult BooleanNot() { return new RuntimeResult(new RuntimeError(Position, "Unsupported operator.", Context)); }
         public virtual RuntimeResult CallMethod(string name, List<(string, Value)> args) { return new RuntimeResult(new RuntimeError(Position, "Not found such a method.", Context)); }
+        public virtual RuntimeResult GetAttribute(string name) { return new RuntimeResult(new RuntimeError(Position, "Attribute '"+name+"' is not defined!", Context)); }
         public virtual int GetElementCount() { return 0; }
         public virtual RuntimeResult GetElementAt(int index) { return new RuntimeResult(new RuntimeError(Position, "Subscript not supported on this object", Context)); }
         public virtual RuntimeResult Abs() { return new RuntimeResult(new RuntimeError(Position, "abs() is not possible on " + Type.ToString().ToLower() + "", Context)); }

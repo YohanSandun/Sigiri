@@ -7,7 +7,9 @@ namespace Sigiri
     class Tokenizer
     {
         private readonly string SkipChars = " \t";
-        private readonly string Digits = "0123456789";
+        private readonly string Digits = "0123456789_";
+        private readonly string HexDigits = "0123456789ABCDEFabcdef_";
+        private readonly string OctDigits = "01234567_";
         private readonly string Letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_$";
         private readonly string[] Keywords = { "and", "or", "not", "in", 
                                                "if", "elif", "else",
@@ -15,7 +17,8 @@ namespace Sigiri
                                                "while", "do", "until",
                                                "when", "default",
                                                "method", "class",
-                                               "return", "break", "continue", "load" };
+                                               "return", "break", "continue", "load",
+                                               "int", "long", "big" };
         private Dictionary<char, string> escapeChars = new Dictionary<char, string>()
         {
             { 'n', "\n"},
@@ -48,12 +51,44 @@ namespace Sigiri
                 return code[currentPosition.Index + step];
             return '\0';
         }
+        private char GetCharAt(int index)
+        {
+            if (index < code.Length)
+                return code[index];
+            return '\0';
+        }
 
         public TokenizerResult GenerateTokens() {
             List<Token> tokens = new List<Token>();
             while (currentChar != '\0') {
                 if (SkipChars.Contains(currentChar))
                     Advance();
+                else if (currentChar == '0') {
+                    if (Peek() == 'x' || Peek() == 'X')
+                    {
+                        TokenizerResult result = MakeHexNumber();
+                        if (result.HasError) return result;
+                        tokens.Add(result.SingleToken);
+                    }
+                    else if (Peek() == 'o' || Peek() == 'O')
+                    {
+                        TokenizerResult result = MakeOctNumber();
+                        if (result.HasError) return result;
+                        tokens.Add(result.SingleToken);
+                    }
+                    else if (Peek() == 'b' || Peek() == 'B')
+                    {
+                        TokenizerResult result = MakeBinNumber();
+                        if (result.HasError) return result;
+                        tokens.Add(result.SingleToken);
+                    }
+                    else {
+                        TokenizerResult result = MakeNumber();
+                        if (result.HasError)
+                            return result;
+                        tokens.Add(result.SingleToken);
+                    }
+                }
                 else if (Digits.Contains(currentChar))
                 {
                     TokenizerResult result = MakeNumber();
@@ -65,7 +100,7 @@ namespace Sigiri
                 {
                     tokens.Add(MakeIdentifier());
                 }
-                else if (currentChar == '"') 
+                else if (currentChar == '"')
                 {
                     tokens.Add(MakeString('"'));
                 }
@@ -146,6 +181,21 @@ namespace Sigiri
                     {
                         tokens.Add(new Token(TokenType.DIV_EQ).SetPosition(currentPosition.Clone()));
                         Advance(2);
+                    }
+                    else if (Peek() == '/')
+                    {
+                        while (currentChar != '\n')
+                        {
+                            if (currentChar == '\0')
+                                break;
+                            Advance();
+                        }
+                        Advance();
+                        continue;
+                    }
+                    else if (Peek() == '*')
+                    {
+                        SkipMultilineComment();
                     }
                     else
                     {
@@ -348,6 +398,118 @@ namespace Sigiri
             return new TokenizerResult(tokens);
         }
 
+        private TokenizerResult MakeBinNumber()
+        {
+            Advance(2); //Advance 0b
+            StringBuilder number = new StringBuilder("0"); // provide 0 for bigints otherwise it will return a negative number
+            Position positionStart = currentPosition.Clone();
+
+            while (currentChar != '\0' && (currentChar == '0'|| currentChar=='1'||currentChar=='_'))
+            {
+                if (currentChar == '_')
+                {
+                    Advance();
+                    continue;
+                }
+                number.Append(currentChar);
+                Advance();
+            }
+            try
+            {
+                int tryInt = Convert.ToInt32(number.ToString(), 2);
+                return new TokenizerResult(new Token(TokenType.INTEGER, tryInt.ToString()).SetPosition(positionStart));
+            }
+            catch
+            {
+                System.Numerics.BigInteger bigInt = 0;
+                long exp = 0;
+                for (int i = number.Length - 1; i >= 0; i--)
+                    bigInt += (number[i] - 48) * Util.BigIntPow(2, exp++);
+                return new TokenizerResult(new Token(TokenType.BIGINTEGER, bigInt.ToString()).SetPosition(positionStart));
+            }
+        }
+
+        private TokenizerResult MakeOctNumber()
+        {
+            Advance(2); //Advance 0o
+            StringBuilder number = new StringBuilder("0"); // provide 0 for bigints otherwise it will return a negative number
+            Position positionStart = currentPosition.Clone();
+
+            while (currentChar != '\0' && OctDigits.Contains(currentChar))
+            {
+                if (currentChar == '_')
+                {
+                    Advance();
+                    continue;
+                }
+                number.Append(currentChar);
+                Advance();
+            }
+            try
+            {
+
+                int tryInt = Convert.ToInt32(number.ToString(), 8);
+                return new TokenizerResult(new Token(TokenType.INTEGER, tryInt.ToString()).SetPosition(positionStart));
+            }
+            catch
+            {
+                System.Numerics.BigInteger bigInt = 0;
+                long exp = 0;
+                for (int i = number.Length - 1; i >= 0; i--)
+                    bigInt += (number[i] - 48) * Util.BigIntPow(8, exp++);
+                Console.WriteLine(bigInt);
+                return new TokenizerResult(new Token(TokenType.BIGINTEGER, bigInt.ToString()).SetPosition(positionStart));
+            }
+        }
+
+        private TokenizerResult MakeHexNumber() {
+            Advance(2); //Advance 0x
+            StringBuilder number = new StringBuilder("0"); // provide 0 for bigints otherwise it will return a negative number
+            Position positionStart = currentPosition.Clone();
+
+            while (currentChar != '\0' && HexDigits.Contains(currentChar))
+            {
+                if (currentChar == '_')
+                {
+                    Advance();
+                    continue;
+                }
+                number.Append(currentChar);
+                Advance();
+            }
+            try {
+                int tryInt = Convert.ToInt32(number.ToString(), 16);
+                return new TokenizerResult(new Token(TokenType.INTEGER, tryInt.ToString()).SetPosition(positionStart));
+            } catch {
+                System.Numerics.BigInteger tryBigInt = System.Numerics.BigInteger.Parse(number.ToString(), System.Globalization.NumberStyles.AllowHexSpecifier);
+                return new TokenizerResult(new Token(TokenType.BIGINTEGER, tryBigInt.ToString()).SetPosition(positionStart));
+            }
+        }
+
+        private void SkipMultilineComment()
+        {
+            int subCmtCount = 0;
+            while (currentChar != '\0')
+            {
+                if (currentChar == '*' && Peek() == '/')
+                {
+                    subCmtCount -= 1;
+                    Advance();
+                    Advance();
+                }
+                else if (currentChar == '/' && Peek() == '*')
+                {
+                    subCmtCount += 1;
+                    Advance();
+                    Advance();
+                }
+                else
+                    Advance();
+                if (subCmtCount == 0)
+                    return;
+            }
+        }
+
         private Token MakeString(char strChar) {
             Advance();
             StringBuilder str = new StringBuilder();
@@ -377,12 +539,47 @@ namespace Sigiri
             return new Token(TokenType.STRING, str.ToString()).SetPosition(positionStart);
         }
 
+        private Token PeekNumberUntil(char chr) {
+            int index = currentPosition.Index + 1; // +1 for skip leading char (maybe + sign)
+            StringBuilder number = new StringBuilder();
+            char cChar = GetCharAt(index);
+            int skipCount = 0;
+
+            while (cChar != '\0' && (Digits.Contains(cChar) || cChar == '.' || cChar == '-')) {
+                skipCount++;
+                number.Append(cChar);
+                cChar = GetCharAt(++index);
+            }
+            if (GetCharAt(index) == chr && !Letters.Contains(GetCharAt(index+1))) {
+                Advance(skipCount + 2);
+                return new Token(TokenType.FLOAT, number.ToString()).SetPosition(currentPosition);
+            }
+            return null;
+            
+        }
+
         private TokenizerResult MakeNumber() {
             StringBuilder number = new StringBuilder();
             int dotCount = 0;
             Position positionStart = currentPosition.Clone();
 
-            while (currentChar != '\0' && (Digits.Contains(currentChar) || currentChar == '.')) {
+            while (currentChar != '\0' && (Digits.Contains(currentChar) || currentChar == '.' || currentChar == '+')) {
+                if (currentChar == '_')
+                {
+                    Advance();
+                    continue;
+                }
+                if (currentChar == '+') {
+                    if (Peek() == 'i')
+                        break;
+                    if (Peek() == '-' && Peek(2) == 'i')
+                        break;
+                    Token token = PeekNumberUntil('i');
+                    if (token == null)
+                        break;
+                    else
+                        return new TokenizerResult(new Token(TokenType.COMPLEX, number.ToString(), token.Value.ToString()).SetPosition(positionStart));
+                }
                 if (currentChar == '.')
                     dotCount++;
                 number.Append(currentChar);
@@ -390,9 +587,16 @@ namespace Sigiri
             }
 
             if (dotCount == 0)
-                return new TokenizerResult(new Token(TokenType.INTEGER, int.Parse(number.ToString())).SetPosition(positionStart));
+            {
+                //todo try parse into long
+                int tryInt;
+                if (int.TryParse(number.ToString(), out tryInt))
+                    return new TokenizerResult(new Token(TokenType.INTEGER, number.ToString()).SetPosition(positionStart));
+                else
+                    return new TokenizerResult(new Token(TokenType.BIGINTEGER, number.ToString()).SetPosition(positionStart));
+            }
             else if (dotCount == 1)
-                return new TokenizerResult(new Token(TokenType.FLOAT, double.Parse(number.ToString())).SetPosition(positionStart));
+                return new TokenizerResult(new Token(TokenType.FLOAT, number.ToString()).SetPosition(positionStart));
             else
                 return new TokenizerResult(new InvalidSyntaxError(positionStart, "More than one dot found in number literal"));
         }

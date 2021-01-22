@@ -4,6 +4,8 @@
         INTEGER,
         FLOAT,
         STRING,
+        BIGINTEGER,
+        COMPLEX,
 
         IDENTIFIER,
         KEYWORD,
@@ -69,12 +71,13 @@
     {
         public TokenType Type { get; set; }
         public object Value { get; set; }
-
+        public object SecondaryValue { get; set; }
         public Position Position { get; set; }
-        public Token(TokenType type, object value = null)
+        public Token(TokenType type, object value = null, object secondVal = null)
         {
             this.Type = type;
             this.Value = value;
+            this.SecondaryValue = secondVal;
         }
 
         public Token SetPosition (Position position) {

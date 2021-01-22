@@ -21,6 +21,11 @@ namespace Sigiri
             this.symbolTable = new Dictionary<string, Values.Value>();
         }
 
+        public bool ContainsSymbol(string name)
+        {
+            return symbolTable.ContainsKey(name);
+        }
+
         public void AddSymbol(string name, Values.Value value) {
             if (symbolTable.ContainsKey(name))
                 symbolTable[name] = value;

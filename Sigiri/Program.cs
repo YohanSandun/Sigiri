@@ -67,7 +67,6 @@ namespace Sigiri
             {
                 Parser parser = new Parser(tokenizerResult.Tokens);
                 ParserResult parserResult = parser.Parse();
-                //Console.WriteLine(parserResult.Node);
                 if (!parserResult.HasError)
                 {
                     Interpreter interpreter = new Interpreter();

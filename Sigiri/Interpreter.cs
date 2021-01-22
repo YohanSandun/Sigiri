@@ -68,9 +68,15 @@ namespace Sigiri
 
         private RuntimeResult VisitNumberNode(NumberNode node, Context context) {
             if (node.Token.Type == TokenType.INTEGER)
-                return new RuntimeResult(new Values.IntegerValue(node.Token.Value).SetPositionAndContext(node.Token.Position, context));
+                return new RuntimeResult(new Values.IntegerValue(Convert.ToInt32(node.Token.Value)).SetPositionAndContext(node.Token.Position, context));
             else if (node.Token.Type == TokenType.FLOAT)
-                return new RuntimeResult(new Values.FloatValue(node.Token.Value).SetPositionAndContext(node.Token.Position, context));
+                return new RuntimeResult(new Values.FloatValue(Convert.ToDouble(node.Token.Value)).SetPositionAndContext(node.Token.Position, context));
+            else if (node.Token.Type == TokenType.BIGINTEGER)
+                return new RuntimeResult(new Values.BigInt(System.Numerics.BigInteger.Parse(node.Token.Value.ToString())).SetPositionAndContext(node.Token.Position, context));
+            else if (node.Token.Type == TokenType.COMPLEX)
+                return new RuntimeResult(new Values.ComplexValue(
+                    Convert.ToDouble(node.Token.Value), Convert.ToDouble(node.Token.SecondaryValue)
+                    ).SetPositionAndContext(node.Token.Position, context));
             return null; // todo error handling
         }
 
@@ -149,12 +155,55 @@ namespace Sigiri
 
         private RuntimeResult VisitVarAssignNode(VarAssignNode node, Context context) {
             string name = node.Token.Value.ToString();
-            if (name == "null" || name == "true" || name == "false")
+            if (name == "null" || name == "true" || name == "false" || name == "this" || name == "base")
                 return new RuntimeResult(new RuntimeError(node.Token.Position, "'" + name + "' is a reserved keyword", context));
             RuntimeResult runtimeResult = Visit(node.Node, context);
             if (runtimeResult.HasError) return runtimeResult;
-            context.AddSymbol(name, runtimeResult.Value);
-            return new RuntimeResult(runtimeResult.Value);
+
+            if (node.TypeToken == null)
+            {
+                if (context.ContainsSymbol(name) && context.GetSymbol(name).TypeDefined) {
+                    Values.ValueType toType = context.GetSymbol(name).Type;
+                    if (toType != runtimeResult.Value.Type)
+                    {
+                        Values.Value castedValue = runtimeResult.Value.Cast(toType);
+                        if (castedValue == null)
+                            return new RuntimeResult(new RuntimeError(node.Token.Position, "Can't convert '" + runtimeResult.Value.Type.ToString().ToLower() + "' to '" + toType.ToString().ToLower() + "'", context));
+                        else {
+                            context.AddSymbol(name, castedValue);
+                            return runtimeResult;
+                        }
+                    }
+                }
+                context.AddSymbol(name, runtimeResult.Value);
+                return runtimeResult;
+            }
+            else {
+                if (node.TypeToken.CheckKeyword("int"))
+                    return TypeDefAssign(Values.ValueType.INTEGER, runtimeResult.Value, name, node.Token.Position, context);
+                if (node.TypeToken.CheckKeyword("complex"))
+                    return TypeDefAssign(Values.ValueType.COMPLEX, runtimeResult.Value, name, node.Token.Position, context);
+                if (node.TypeToken.CheckKeyword("long"))
+                    return TypeDefAssign(Values.ValueType.INT64, runtimeResult.Value, name, node.Token.Position, context);
+                if (node.TypeToken.CheckKeyword("big"))
+                    return TypeDefAssign(Values.ValueType.BIGINTEGER, runtimeResult.Value, name, node.Token.Position, context);
+
+            }
+            return new RuntimeResult(new RuntimeError(node.Token.Position, "Type conversion error", context));
+        }
+
+        private RuntimeResult TypeDefAssign(Values.ValueType type, Values.Value from, string name, Position position, Context context) {
+            if (from.Type == type)
+            {
+                context.AddSymbol(name, from);
+                return new RuntimeResult(from);
+            }
+            Values.Value castedVal = from.Cast(type);
+            castedVal.TypeDefined = true;
+            if (castedVal == null)
+                return new RuntimeResult(new RuntimeError(position, "Can't convert '" + from.Type.ToString().ToLower() + "' to '" + type.ToString().ToLower() + "'", context));
+            context.AddSymbol(name, castedVal);
+            return new RuntimeResult(castedVal);
         }
 
         private RuntimeResult VisitVarAccessNode(VarAccessNode node, Context context) {
@@ -549,7 +598,7 @@ namespace Sigiri
             {
                 VarAssignNode assignNode = (VarAssignNode)node.Node;
                 string name = assignNode.Token.Value.ToString();
-                if (name == "null" || name == "true" || name == "false")
+                if (name == "null" || name == "true" || name == "false" || name == "this" || name == "base")
                     return new RuntimeResult(new RuntimeError(assignNode.Token.Position, "'" + name + "' is a reserved keyword", context));
                 RuntimeResult result = Visit(node.Node, context);
                 if (result.HasError) return result;
@@ -576,15 +625,11 @@ namespace Sigiri
                                 return new RuntimeResult(new RuntimeError(callNode.Position, "Error while converting list to an array", context));
                             args.Add(array);
                         }
-                        else if (result.Value.Data.GetType().Name.Equals("Double"))
-                            args.Add(Convert.ToSingle(result.Value.Data));
                         else if (result.Value.IsBoolean)
                             args.Add(result.Value.GetAsBoolean());
-
                         else
                             args.Add(result.Value.Data);
                     }
-
                     return asmVal.Invoke(name, args.ToArray());
                 }
                 else if (Util.isPremitiveType(runtimeResult.Value.Type))
@@ -603,8 +648,21 @@ namespace Sigiri
                 else
                     return VisitCallNode((CallNode)node.Node, runtimeResult.Value.Context, context);
             }
-            else if (node.Node.Type == NodeType.BINARY) {
+            else if (node.Node.Type == NodeType.BINARY)
+            {
                 return VisitBinaryNode((BinaryNode)node.Node, runtimeResult.Value.Context, context);
+            }
+            else if (node.Node.Type == NodeType.VAR_ACCESS) {
+                if (runtimeResult.Value.Type == Values.ValueType.ASSEMBLY)
+                {
+                    VarAccessNode varAccessNode = (VarAccessNode)node.Node;
+                    return runtimeResult.Value.GetAttribute(varAccessNode.Token.Value.ToString());
+                }
+                if (Util.isPremitiveType(runtimeResult.Value.Type))
+                {
+                    VarAccessNode varAccessNode = (VarAccessNode)node.Node;
+                    return runtimeResult.Value.GetAttribute(varAccessNode.Token.Value.ToString());
+                }
             }
             return Visit(node.Node, runtimeResult.Value.Context);
         }
@@ -615,37 +673,42 @@ namespace Sigiri
 
             if (File.Exists(Program.FileDirectory + fname + Program.LibraryExt))
                 fileName = Program.FileDirectory + fname + Program.LibraryExt;
+            else if (File.Exists(Program.FileDirectory + "libs\\" + fname + Program.LibraryExt))
+                fileName = Program.FileDirectory + "libs\\" + fname + Program.LibraryExt;
             else if (File.Exists(Program.FileDirectory + fname + ".si"))
                 fileName = Program.FileDirectory + fname + ".si";
+            else if (File.Exists(Program.FileDirectory + "libs\\" + fname + ".si"))
+                fileName = Program.FileDirectory + "libs\\" + fname + ".si";
             else if (File.Exists(Program.BaseDirectory + fname + Program.LibraryExt))
                 fileName = Program.BaseDirectory + fname + Program.LibraryExt;
+            else if (File.Exists(Program.BaseDirectory + "libs\\" + fname + Program.LibraryExt))
+                fileName = Program.BaseDirectory + fname + "libs\\" + Program.LibraryExt;
             else if (File.Exists(Program.BaseDirectory + fname + ".si"))
                 fileName = Program.BaseDirectory + fname + ".si";
+            else if (File.Exists(Program.BaseDirectory + "libs\\" + fname + ".si"))
+                fileName = Program.BaseDirectory + "libs\\" + fname + ".si";
+
+            if (fileName.Equals(""))
+                return new RuntimeResult(new RuntimeError(node.Token.Position, "Assembly '" + fname + "' not found!", context));
 
             if (fileName.EndsWith(Program.LibraryExt))
             {
                 if (node.ClassToken != null)
                 {
                     Values.AssemblyValue value = new Values.AssemblyValue();
-                    value.Assembly = Assembly.LoadFile(fileName);
-
-                    value.AsmType = value.Assembly.GetType(fname + "." + node.ClassToken.Value.ToString());
-
-                    ConstructorInfo constructor = value.AsmType.GetConstructor(Type.EmptyTypes);
-                    value.Instance =  constructor.Invoke(new object[] { });
-
-                    FieldInfo[] fields = value.AsmType.GetFields();
-                    for (int j = 0; j < fields.Length; j++)
-                    {
-                        context.AddSymbol(fields[j].Name, Values.AssemblyValue.ParseValue(fields[j].GetValue(null), node.Token.Position, context));
-                    }
                     value.SetPositionAndContext(node.Token.Position, context);
+                    value.LoadAsm("libs\\"+fname+ Program.LibraryExt, fname, node.ClassToken.Value.ToString());
                     context.AddSymbol(node.ClassToken.Value.ToString(), value);
                     return new RuntimeResult(value);
                 }
                 else {
+                    //todo fix this system
                     Assembly asm = Assembly.LoadFile(fileName);
                     Type[] types = asm.GetTypes();
+                    for (int i = 0; i < types.Length; i++)
+                    {
+                        Console.WriteLine(types[i].Name);
+                    }
                     for (int i = 0; i < types.Length; i++)
                     {
                         Values.AssemblyValue value = new Values.AssemblyValue();

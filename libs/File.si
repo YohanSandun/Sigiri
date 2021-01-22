@@ -1,0 +1,95 @@
+class File {
+	method init(fileName, mode="r") {
+		this.IO = load system.IO
+		this.file = fileName
+		this.mode = mode
+		IO.init(fileName, mode)
+	}
+
+	method readAllLines(lineTerminator="\r\n") {
+		if mode!="r" && mode!="rw" {
+			print("ERROR: file opened with wrong mode")
+			return
+		}
+		return split(IO.readAllText(), lineTerminator)
+	}
+
+	method read() {
+		if mode!="r" && mode!="rw" {
+			print("ERROR: file opened with wrong mode")
+			return
+		}
+		return IO.readAllText()
+	}
+
+	method readBytes(offset, count) {
+		if mode!="r" && mode!="rw" {
+			print("ERROR: file opened with wrong mode")
+			return
+		}
+		return IO.read(offset, count)
+	}
+	
+	method readAllBytes() {
+		if mode!="r" && mode!="rw" {
+			print("ERROR: file opened with wrong mode")
+			return
+		}
+		return IO.read(0, IO.getLength())
+	}
+
+	method readByte() {
+		if mode!="r" && mode!="rw" {
+			print("ERROR: file opened with wrong mode")
+			return
+		}
+		return IO.readByte()
+	}
+
+	method write(text, flush=true) {
+		if mode!="w" && mode!="rw" {
+			print("ERROR: file opened with wrong mode")
+			return
+		}
+		IO.writeText(text, flush)
+	}
+
+	method writeLine(line, flush=true) {
+		if mode!="w" && mode!="rw" {
+			print("ERROR: file opened with wrong mode")
+			return
+		}
+		IO.writeText(line + "\n", flush)
+	}
+
+	method writeBytes(byteList, offset=null, flush=true) {
+		if mode!="w" && mode!="rw" {
+			print("ERROR: file opened with wrong mode")
+			return
+		}
+		if !offset:
+			IO.write(byteList, flush)
+		else:
+			IO.writeAt(byteList, offset, flush)
+	}
+
+	method writeByte(byte, flush=true) {
+		if mode!="w" && mode!="rw" {
+			print("ERROR: file opened with wrong mode")
+			return
+		}
+		IO.writeByte(byte, flush)
+	}
+
+	method flush():
+		IO.flush()
+
+	method close(): 
+		IO.close()
+
+	method getLength(): 
+		return IO.getLength()
+
+	method seek(offset, origin="c"):
+		IO.seek(offset, origin)
+}

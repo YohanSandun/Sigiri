@@ -24,7 +24,6 @@ namespace Sigiri.Values
         public RuntimeResult InitializeBaseClass(Context ctx, Interpreter interpreter) {
             if (BaseClass != null) {
                 ClassValue classValue = ((ClassValue)BaseClass).Clone();
-                //classValue.Type = ValueType.OBJECT;
                 if (classValue.BaseClass != null)
                 {
                     RuntimeResult baseResult = classValue.InitializeBaseClass(ctx, interpreter);
@@ -75,6 +74,8 @@ namespace Sigiri.Values
             if (result.HasError) return result.Error.ToString();
             return result.Value.ToString();
         }
+
+        #region Arithmetic
         public override RuntimeResult Add(Value other)
         {
             return OperatorOverload("-add-", other);
@@ -99,6 +100,9 @@ namespace Sigiri.Values
         {
             return OperatorOverload("-mod-", other);
         }
+        #endregion
+
+        #region Comparison
         public override RuntimeResult LessThan(Value other)
         {
             return OperatorOverload("-les-", other);
@@ -123,6 +127,39 @@ namespace Sigiri.Values
         {
             return OperatorOverload("-neq-", other);
         }
+        #endregion
+
+        #region Boolean
+        public override bool GetAsBoolean()
+        {
+            RuntimeResult result = OperatorOverload("$bool$");
+            if (result.HasError)
+            {
+                Console.WriteLine(result.Error);
+                return false;
+            }
+            if (result.Value.Type != ValueType.INTEGER)
+            {
+                Console.WriteLine("RuntimeError: $bool$ method should return a boolean or an integer not " + result.Value.Type.ToString().ToLower());
+                return false;
+            }
+            return Convert.ToInt32(result.Value.Data) == 0 ? false : true;
+        }
+        public override RuntimeResult BooleanAnd(Value other)
+        {
+            return OperatorOverload("-and-", other);
+        }
+        public override RuntimeResult BooleanOr(Value other)
+        {
+            return OperatorOverload("-orr-", other);
+        }
+        public override RuntimeResult BooleanNot()
+        {
+            return OperatorOverload("-not-");
+        }
+        #endregion
+
+        #region Bitwise
         public override RuntimeResult BitwiseAnd(Value other)
         {
             return OperatorOverload("-ban-", other);
@@ -139,6 +176,16 @@ namespace Sigiri.Values
         {
             return OperatorOverload("-com-");
         }
+        public override RuntimeResult LeftShift(Value other)
+        {
+            return OperatorOverload("-lsh-", other);
+        }
+        public override RuntimeResult RightShift(Value other)
+        {
+            return OperatorOverload("-rsh-", other);
+        }
+        #endregion
+
         public override RuntimeResult Subscript(Value value)
         {
             return OperatorOverload("-sst-", value);
@@ -156,26 +203,7 @@ namespace Sigiri.Values
             args.Add(("", value));
             return methodValue.Execute(args, new Interpreter());
         }
-        public override RuntimeResult BooleanAnd(Value other)
-        {
-            return OperatorOverload("-and-", other);
-        }
-        public override RuntimeResult BooleanOr(Value other)
-        {
-            return OperatorOverload("-orr-", other);
-        }
-        public override RuntimeResult BooleanNot()
-        {
-            return OperatorOverload("-not-");
-        }
-        public override RuntimeResult LeftShift(Value other)
-        {
-            return OperatorOverload("-lsh-", other);
-        }
-        public override RuntimeResult RightShift(Value other)
-        {
-            return OperatorOverload("-rsh-", other);
-        }
+
         public override RuntimeResult In(Value other)
         {
             return OperatorOverload("-inn-", other);
@@ -193,22 +221,6 @@ namespace Sigiri.Values
                 return 0;
             }
             return Convert.ToInt32(result.Value.Data);
-        }
-
-        public override bool GetAsBoolean()
-        {
-            RuntimeResult result = OperatorOverload("$bool$");
-            if (result.HasError)
-            {
-                Console.WriteLine(result.Error);
-                return false;
-            }
-            if (result.Value.Type != ValueType.INTEGER)
-            {
-                Console.WriteLine("RuntimeError: $bool$ method should return a boolean or an integer not " + result.Value.Type.ToString().ToLower());
-                return false;
-            }
-            return Convert.ToInt32(result.Value.Data) == 0 ? false : true;
         }
 
         public override RuntimeResult GetElementAt(int index)

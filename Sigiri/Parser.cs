@@ -604,7 +604,7 @@ namespace Sigiri
 
         private ParserResult Atom() {
             Token token = currentToken;
-            if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT)
+            if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || token.Type == TokenType.BIGINTEGER || token.Type == TokenType.COMPLEX)
             {
                 Advance();
                 return new ParserResult(new NumberNode(token));
@@ -628,6 +628,14 @@ namespace Sigiri
                     ParserResult exprResult = Expr();
                     if (exprResult.HasError) return exprResult;
                     return new ParserResult(new VarAssignNode(token, exprResult.Node));
+                }
+                if (currentToken.Type == TokenType.COLON && Peek(2).Type == TokenType.EQUALS) {
+                    Advance();
+                    Token typeToken = currentToken; //todo check is it a valid keyword
+                    Advance(2);
+                    ParserResult exprResult = Expr();
+                    if (exprResult.HasError) return exprResult;
+                    return new ParserResult(new VarAssignNode(token, exprResult.Node, typeToken));
                 }
                 return new ParserResult(new VarAccessNode(token));
             }

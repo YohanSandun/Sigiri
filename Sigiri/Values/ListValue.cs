@@ -132,6 +132,13 @@ namespace Sigiri.Values
             return new RuntimeResult(new IntegerValue(0, true).SetPositionAndContext(Position, Context));
         }
 
+        public override RuntimeResult NotEquals(Value other)
+        {
+            RuntimeResult result = Equals(other);
+            if (result.HasError) return result;
+            return result.Value.GetAsBoolean() ? new RuntimeResult(new IntegerValue(false).SetPositionAndContext(Position, Context)) : new RuntimeResult(new IntegerValue(true).SetPositionAndContext(Position, Context));
+        }
+
         public override bool ContainsElement(Value value)
         {
             foreach (Value item in Elements)

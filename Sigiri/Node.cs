@@ -110,10 +110,13 @@ namespace Sigiri
     class VarAssignNode : Node { 
         public Node Node { get; set; }
         public Token Token { get; set; }
-        public VarAssignNode(Token token, Node node):base(NodeType.VAR_ASSIGN)
+        public Token TypeToken { get; set; }
+
+        public VarAssignNode(Token token, Node node, Token typeToken = null):base(NodeType.VAR_ASSIGN)
         {
             this.Node = node;
             this.Token = token;
+            this.TypeToken = typeToken;
         }
 
         public override string ToString()

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Sigiri.Values
 {
@@ -93,7 +91,7 @@ namespace Sigiri.Values
 
         public override RuntimeResult Add(Value other)
         {
-            if (other.Type == ValueType.STRING || other.Type == ValueType.INTEGER || other.Type == ValueType.FLOAT || other.Type == ValueType.LIST)
+            if (other.Type == ValueType.STRING || other.Type == ValueType.INTEGER || other.Type == ValueType.FLOAT || other.Type == ValueType.LIST || other.Type == ValueType.INT64 || other.Type == ValueType.BIGINTEGER || other.Type == ValueType.COMPLEX)
                 return new RuntimeResult(new StringValue(Data.ToString() + other.ToString()).SetPositionAndContext(Position, Context));
             return new RuntimeResult(new RuntimeError(Position, "String concadinate is unsupported with " + other.Type.ToString().ToLower(), Context));
         }

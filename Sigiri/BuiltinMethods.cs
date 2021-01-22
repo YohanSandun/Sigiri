@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.IO;
+using System.Reflection;
+using System.Linq;
 
 namespace Sigiri
 {
@@ -14,6 +16,9 @@ namespace Sigiri
 
         public static void InitializeBuiltinMethods() {
             if (initialized) return;
+
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
             initialized = true;
             BuiltinMethodList.Add("print", new BuiltinMethod(new List<string>() { "value", "end"},new Dictionary<string, Values.Value>() {
                 { "value", new Values.StringValue("")},
@@ -54,11 +59,44 @@ namespace Sigiri
                 { "value", null}
             }, len));
 
-            /* Methods belongs to string objects (not avaiable public) */
+            BuiltinMethodList.Add("typeof", new BuiltinMethod(new List<string>() { "value" }, new Dictionary<string, Values.Value>() {
+                { "value", null}
+            }, _typeof));
+
+            BuiltinMethodList.Add("complex", new BuiltinMethod(new List<string>() { "real", "imag" }, new Dictionary<string, Values.Value>() {
+                { "real", new Values.IntegerValue(0)},
+                { "imag", new Values.IntegerValue(0)}
+            }, complex));
+
+
+            /* Methods belongs to string objects (not avaiable in public) */
             StringMethods.Add("subString", new BuiltinMethod(new List<string>() { "startIndex", "length" }, new Dictionary<string, Values.Value>() {
                 { "startIndex", new Values.IntegerValue(0) },
                 { "length", new Values.NullValue() }
             }, str_substr));
+
+        }
+
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            string[] locations = { Program.BaseDirectory };
+            string asmName = new AssemblyName(args.Name).Name + ".dll";
+            for (int i = 0; i < locations.Length; i++)
+            {
+                //Console.Write("searching " + i + " : " + asmName);
+                string dir = locations[i];
+                IEnumerable<string> files = Directory.EnumerateFiles(dir, "*.dll", SearchOption.AllDirectories);
+                foreach (string file in files)
+                {
+                    if (string.Compare(Path.GetFileName(file), asmName, true) == 0)
+                    {
+                        //Console.WriteLine(" - found " + Path.GetFileName(file));
+                        return Assembly.LoadFile(file);
+                    }
+                }
+                //Console.WriteLine(" - notFound ");
+            }
+            return null;
         }
 
         public static RuntimeResult Execute(string name, List<(string, Values.Value)> args, Position position, Context context) 
@@ -219,6 +257,29 @@ namespace Sigiri
             }
             catch { }
             return new RuntimeResult(new RuntimeError(position, "Index out of range.", context));
+        }
+
+        static RuntimeResult _typeof(Position position, Context context)
+        {
+            Values.Value value = context.GetSymbol("value");
+            return new RuntimeResult(new Values.StringValue(value.Type.ToString().ToLower()).SetPositionAndContext(position, context));
+        }
+
+        static RuntimeResult complex(Position position, Context context)
+        {
+            Values.Value real = context.GetSymbol("real");
+            Values.Value imag = context.GetSymbol("imag");
+            if (real.Type == Values.ValueType.INTEGER || real.Type == Values.ValueType.FLOAT || real.Type == Values.ValueType.INT64)
+            {
+                if (imag.Type == Values.ValueType.INTEGER || imag.Type == Values.ValueType.FLOAT || imag.Type == Values.ValueType.INT64)
+                {
+                    return new RuntimeResult(new Values.ComplexValue(Convert.ToDouble(real.Data), Convert.ToDouble(imag.Data)).SetPositionAndContext(position, context));
+                }
+                else
+                    return new RuntimeResult(new RuntimeError(position, "Imaginary part should be a float or integer", context));
+            }
+            else
+                return new RuntimeResult(new RuntimeError(position, "Real part should be a float or integer", context));
         }
 
     }

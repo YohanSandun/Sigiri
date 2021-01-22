@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sigiri", "Sigiri\Sigiri.csproj", "{BCDE1D05-37E8-408C-A699-F58FB52F2106}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "system", "system\system.csproj", "{6A0ECF12-4219-417F-A524-E9F1CAA94DF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "system", "system\system.csproj", "{6A0ECF12-4219-417F-A524-E9F1CAA94DF2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "libraries", "libraries", "{E0172552-6346-4E62-9C46-CFF00C6C0E25}"
 	ProjectSection(SolutionItems) = preProject
