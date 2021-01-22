@@ -59,7 +59,7 @@ math.ccos(c)
 - `ctanh(value)` : The hyperbolic tangent of value.
 
 ### Notes
-- The built in method `abs(value)` can used to get the absolute value of a complex number.
+- The built in method `abs(value)` can be used to get the absolute value of a complex number.
 - Fractional exponent of negative numbers, will also return a complex number.
 ```sh
 c = (-10)**0.5
