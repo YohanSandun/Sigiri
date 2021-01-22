@@ -9,7 +9,8 @@ Sigiri is a simple, object-oriented, interpreted programming laguage. Designed f
 ### Highlights
 - Object-Oriented programming
 - Dynamically typed
-- Can interface managed assemblies (.dll/.so)
+- Built-in support for arbitrary precision and complex number arithmetics.
+- Can interface managed assemblies (.dlls on windows)
 - Cross-Platform (Source can be compiled on Windows,Linux, and OSX using .NET Core)
 
 ### Built-in data types
