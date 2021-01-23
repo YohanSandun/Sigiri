@@ -35,10 +35,14 @@ namespace Sigiri.Values
                             return new RuntimeResult(new RuntimeError(Position, "String concadination error", Context));
                     }
                     return new RuntimeResult(this);
-                case "getLength":
-                    return new RuntimeResult(new IntegerValue(Data.ToString().Length).SetPositionAndContext(Position, Context));
-                case "subString":
+                case "capitalize":
+                    return new RuntimeResult(new StringValue(Util.Capitalize(Data.ToString())).SetPositionAndContext(Position, Context));
+                case "center":
                     return BuiltinMethods.ExecStringMethod(name, this, args, Position, Context);
+                case "subStr":
+                    return BuiltinMethods.ExecStringMethod(name, this, args, Position, Context);
+                //case "count":
+                //    return BuiltinMethods.ExecStringMethod(name, this, args, Position, Context);
                 case "toUpper":
                     return new RuntimeResult(new StringValue(Data.ToString().ToUpper()).SetPositionAndContext(Position, Context));
                 case "toLower":
@@ -63,6 +67,15 @@ namespace Sigiri.Values
                     return new RuntimeResult(Data.ToString().EndsWith(val1) ? new IntegerValue(1,true).SetPositionAndContext(Position, Context) : new IntegerValue(0,true).SetPositionAndContext(Position, Context));
             }
             return base.CallMethod(name, args);
+        }
+
+        public override RuntimeResult GetAttribute(string name)
+        {
+            switch (name) {
+                case "length":
+                    return new RuntimeResult(new IntegerValue(Data.ToString().Length).SetPositionAndContext(Position, Context));
+            }
+            return base.GetAttribute(name);
         }
 
         public override int GetElementCount()

@@ -85,6 +85,7 @@ namespace Sigiri
         }
 
         private RuntimeResult VisitBinaryNode(BinaryNode node, Context context, Context other = null) {
+
             RuntimeResult leftResult = Visit(node.LeftNode, context);
             if (leftResult.HasError) return leftResult;
             RuntimeResult rightResult = Visit(node.RightNode, other != null ? other : context);
@@ -153,11 +154,12 @@ namespace Sigiri
             return null; // todo: error handling
         }
 
-        private RuntimeResult VisitVarAssignNode(VarAssignNode node, Context context) {
+        private RuntimeResult VisitVarAssignNode(VarAssignNode node, Context context, Context baseCtx = null) {
             string name = node.Token.Value.ToString();
             if (name == "null" || name == "true" || name == "false" || name == "this" || name == "base")
                 return new RuntimeResult(new RuntimeError(node.Token.Position, "'" + name + "' is a reserved keyword", context));
-            RuntimeResult runtimeResult = Visit(node.Node, context);
+            RuntimeResult runtimeResult = Visit(node.Node, baseCtx != null ? baseCtx : context);
+
             if (runtimeResult.HasError) return runtimeResult;
 
             if (node.TypeToken == null)
@@ -594,25 +596,16 @@ namespace Sigiri
         private RuntimeResult VisitAttributeNode(AttributeNode node, Context context) {
             RuntimeResult runtimeResult = Visit(node.BaseNode, context);
             if (runtimeResult.HasError) return runtimeResult;
+
             if (node.Node.Type == NodeType.VAR_ASSIGN)
-            {
-                VarAssignNode assignNode = (VarAssignNode)node.Node;
-                string name = assignNode.Token.Value.ToString();
-                if (name == "null" || name == "true" || name == "false" || name == "this" || name == "base")
-                    return new RuntimeResult(new RuntimeError(assignNode.Token.Position, "'" + name + "' is a reserved keyword", context));
-                RuntimeResult result = Visit(node.Node, context);
-                if (result.HasError) return result;
-                runtimeResult.Value.Context.AddSymbol(name, result.Value);
-                return result;
-            }
+                return VisitVarAssignNode((VarAssignNode)node.Node, runtimeResult.Value.Context, context);
             else if (node.Node.Type == NodeType.CALL)
             {
                 if (runtimeResult.Value.Type == Values.ValueType.ASSEMBLY)
                 {
-                    Values.AssemblyValue asmVal = (Values.AssemblyValue)runtimeResult.Value;
                     CallNode callNode = (CallNode)node.Node;
-                    VarAccessNode accessNode = (VarAccessNode)callNode.Node;
-                    string name = accessNode.Token.Value.ToString();
+                    Values.AssemblyValue asmVal = (Values.AssemblyValue)runtimeResult.Value;
+                    string name = ((VarAccessNode)callNode.Node).Token.Value.ToString();
                     List<object> args = new List<object>();
                     for (int i = 0; i < callNode.Arguments.Count; i++)
                     {
@@ -645,23 +638,14 @@ namespace Sigiri
                     string name = ((VarAccessNode)callNode.Node).Token.Value.ToString();
                     return runtimeResult.Value.CallMethod(name, args);
                 }
-                else
-                    return VisitCallNode((CallNode)node.Node, runtimeResult.Value.Context, context);
+                return VisitCallNode((CallNode)node.Node, runtimeResult.Value.Context, context);
             }
-            else if (node.Node.Type == NodeType.BINARY)
+            else if (node.Node.Type == NodeType.VAR_ACCESS)
             {
-                return VisitBinaryNode((BinaryNode)node.Node, runtimeResult.Value.Context, context);
-            }
-            else if (node.Node.Type == NodeType.VAR_ACCESS) {
                 if (runtimeResult.Value.Type == Values.ValueType.ASSEMBLY)
                 {
-                    VarAccessNode varAccessNode = (VarAccessNode)node.Node;
-                    return runtimeResult.Value.GetAttribute(varAccessNode.Token.Value.ToString());
-                }
-                if (Util.isPremitiveType(runtimeResult.Value.Type))
-                {
-                    VarAccessNode varAccessNode = (VarAccessNode)node.Node;
-                    return runtimeResult.Value.GetAttribute(varAccessNode.Token.Value.ToString());
+                    VarAccessNode vaccess = (VarAccessNode)node.Node;
+                    return runtimeResult.Value.GetAttribute(vaccess.Token.Value.ToString());
                 }
             }
             return Visit(node.Node, runtimeResult.Value.Context);

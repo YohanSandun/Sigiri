@@ -87,10 +87,12 @@ namespace Sigiri
 
         private ParserResult Attribute(Node baseNode) {
             Advance();
-            ParserResult nodeResult = ArithExpr();
+            ParserResult nodeResult = Call(true);
             if (nodeResult.HasError) return nodeResult;
+            
             if (currentToken.Type == TokenType.DOT)
                 return Attribute(new AttributeNode(baseNode, nodeResult.Node));
+
             return new ParserResult(new AttributeNode(baseNode, nodeResult.Node));
         }
 
@@ -602,7 +604,7 @@ namespace Sigiri
             return new ParserResult(new DictionaryNode(pairs).SetPosition(currentToken.Position));
         }
 
-        private ParserResult Atom() {
+        private ParserResult Atom(bool byPassDot = false) {
             Token token = currentToken;
             if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || token.Type == TokenType.BIGINTEGER || token.Type == TokenType.COMPLEX)
             {
@@ -621,7 +623,7 @@ namespace Sigiri
                 Advance();
                 if (currentToken.Type == TokenType.LEFT_SQB)
                     return Subscript(new VarAccessNode(token));
-                if (currentToken.Type == TokenType.DOT)
+                if (!byPassDot && currentToken.Type == TokenType.DOT)
                     return Attribute(new VarAccessNode(token));
                 if (currentToken.Type == TokenType.EQUALS) {
                     Advance();
@@ -688,8 +690,8 @@ namespace Sigiri
             return new ParserResult(new InvalidSyntaxError(token.Position, "Expected int or float"));
         }
 
-        private ParserResult Call() {
-            ParserResult atomResult = Atom();
+        private ParserResult Call(bool byPassDot = false) {
+            ParserResult atomResult = Atom(byPassDot);
             if (atomResult.HasError) return atomResult;
             if (currentToken.Type == TokenType.LEFT_PAREN)
             {
@@ -733,65 +735,65 @@ namespace Sigiri
             return atomResult;
         }
 
-        private ParserResult Complement() {
+        private ParserResult Complement(bool byPassDot = false) {
             Token token = currentToken;
             if (token.Type == TokenType.COMPLEMENT) {
                 Advance();
-                ParserResult factorResult = Factor();
+                ParserResult factorResult = Factor(byPassDot);
                 if (factorResult.HasError) return factorResult;
                 return new ParserResult(new UnaryNode(token, factorResult.Node));
             }
-            return Call();
+            return Call(byPassDot);
         }
 
-        private ParserResult Exponent()
+        private ParserResult Exponent(bool byPassDot = false)
         {
-            ParserResult leftResult = Complement();
+            ParserResult leftResult = Complement(byPassDot);
             if (leftResult.HasError) return leftResult;
             while (currentToken.Type == TokenType.EXPONENT)
             {
                 Token token = currentToken;
                 Advance();
-                ParserResult rightResult = Factor();
+                ParserResult rightResult = Factor(byPassDot);
                 if (rightResult.HasError) return rightResult;
                 leftResult = new ParserResult(new BinaryNode(leftResult.Node, token, rightResult.Node));
             }
             return leftResult;
         }
 
-        private ParserResult Factor() {
+        private ParserResult Factor(bool byPassDot = false) {
             Token token = currentToken;
             if (token.Type == TokenType.PLUS || token.Type == TokenType.MINUS) {
                 Advance();
-                ParserResult factorResult = Factor();
+                ParserResult factorResult = Factor(byPassDot);
                 if (factorResult.HasError) return factorResult;
                 return new ParserResult(new UnaryNode(token, factorResult.Node));
             }
-            return Exponent();
+            return Exponent(byPassDot);
         }
 
-        private ParserResult Term() {
-            ParserResult leftResult = Factor();
+        private ParserResult Term(bool byPassDot = false) {
+            ParserResult leftResult = Factor(byPassDot);
             if (leftResult.HasError) return leftResult;
             while (currentToken.Type == TokenType.MULTIPLY || currentToken.Type == TokenType.DIVIDE || currentToken.Type == TokenType.MODULUS) {
                 Token token = currentToken;
                 Advance();
-                ParserResult rightResult = Factor();
+                ParserResult rightResult = Factor(byPassDot);
                 if (rightResult.HasError) return rightResult;
                 leftResult = new ParserResult(new BinaryNode(leftResult.Node, token, rightResult.Node));
             }
             return leftResult;
         }
 
-        private ParserResult ArithExpr()
+        private ParserResult ArithExpr(bool byPassDot = false)
         {
-            ParserResult leftResult = Term();
+            ParserResult leftResult = Term(byPassDot);
             if (leftResult.HasError) return leftResult;
             while (currentToken.Type == TokenType.PLUS || currentToken.Type == TokenType.MINUS)
             {
                 Token token = currentToken;
                 Advance();
-                ParserResult rightResult = Term();
+                ParserResult rightResult = Term(byPassDot);
                 if (rightResult.HasError) return rightResult;
                 leftResult = new ParserResult(new BinaryNode(leftResult.Node, token, rightResult.Node));
             }

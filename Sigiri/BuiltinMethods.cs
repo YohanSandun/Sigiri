@@ -68,6 +68,10 @@ namespace Sigiri
                 { "imag", new Values.IntegerValue(0)}
             }, complex));
 
+            BuiltinMethodList.Add("round", new BuiltinMethod(new List<string>() { "value", "digits" }, new Dictionary<string, Values.Value>() {
+                { "value", null },
+                { "digits", new Values.IntegerValue(0) }
+            }, round));
 
             /* Methods belongs to string objects (not avaiable in public) */
             StringMethods.Add("subString", new BuiltinMethod(new List<string>() { "startIndex", "length" }, new Dictionary<string, Values.Value>() {
@@ -75,6 +79,10 @@ namespace Sigiri
                 { "length", new Values.NullValue() }
             }, str_substr));
 
+            StringMethods.Add("center", new BuiltinMethod(new List<string>() { "width", "fillChar" }, new Dictionary<string, Values.Value>() {
+                { "width", null },
+                { "fillChar", new Values.StringValue(" ") }
+            }, str_center));
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -239,26 +247,6 @@ namespace Sigiri
             return new RuntimeResult(new Values.IntegerValue(value.GetElementCount()).SetPositionAndContext(position, context));
         }
 
-        static RuntimeResult str_substr(Values.Value value, Position position, Context context) {
-            Values.Value start = context.GetSymbol("startIndex");
-            Values.Value length = context.GetSymbol("length");
-            if (start.Type != Values.ValueType.INTEGER)
-                return new RuntimeResult(new RuntimeError(position, "startIndex must be an integer. provided " + start.Type.ToString().ToLower(), context));
-            if (length.Type != Values.ValueType.NULL && length.Type != Values.ValueType.INTEGER)
-                return new RuntimeResult(new RuntimeError(position, "length must be an integer or null. provided " + start.Type.ToString().ToLower(), context));
-            string str = value.Data.ToString();
-            int i_start = Convert.ToInt32(start.Data);
-            int i_len = str.Length - i_start;
-            if (length.Type == Values.ValueType.INTEGER)
-                i_len = Convert.ToInt32(length.Data);
-            try
-            {
-                return new RuntimeResult(new Values.StringValue(str.Substring(i_start, i_len)).SetPositionAndContext(position, context));
-            }
-            catch { }
-            return new RuntimeResult(new RuntimeError(position, "Index out of range.", context));
-        }
-
         static RuntimeResult _typeof(Position position, Context context)
         {
             Values.Value value = context.GetSymbol("value");
@@ -282,6 +270,61 @@ namespace Sigiri
                 return new RuntimeResult(new RuntimeError(position, "Real part should be a float or integer", context));
         }
 
+        static RuntimeResult round(Position position, Context context) {
+            Values.Value value = context.GetSymbol("value");
+            Values.Value digits = context.GetSymbol("digits");
+            if (value.Type != Values.ValueType.INTEGER && value.Type != Values.ValueType.INT64 && value.Type != Values.ValueType.FLOAT)
+                return new RuntimeResult(new RuntimeError(position, "Value must be a numeric value", context));
+            if (digits.Type != Values.ValueType.INTEGER && digits.Type != Values.ValueType.INT64)
+                return new RuntimeResult(new RuntimeError(position, "Digits must be a integer value", context));
+            double result = Math.Round(Convert.ToDouble(value.Data), Convert.ToInt32(digits.Data));
+            if (Math.Floor(result) != result)
+                return new RuntimeResult(new Values.FloatValue(result).SetPositionAndContext(position, context));
+            return new RuntimeResult(new Values.IntegerValue(Convert.ToInt32(result)).SetPositionAndContext(position, context));
+        }
+
+
+        #region String Methods
+        static RuntimeResult str_substr(Values.Value value, Position position, Context context)
+        {
+            Values.Value start = context.GetSymbol("startIndex");
+            Values.Value length = context.GetSymbol("length");
+            if (start.Type != Values.ValueType.INTEGER)
+                return new RuntimeResult(new RuntimeError(position, "startIndex must be an integer. provided " + start.Type.ToString().ToLower(), context));
+            if (length.Type != Values.ValueType.NULL && length.Type != Values.ValueType.INTEGER)
+                return new RuntimeResult(new RuntimeError(position, "length must be an integer or null. provided " + start.Type.ToString().ToLower(), context));
+            string str = value.Data.ToString();
+            int i_start = Convert.ToInt32(start.Data);
+            int i_len = str.Length - i_start;
+            if (length.Type == Values.ValueType.INTEGER)
+                i_len = Convert.ToInt32(length.Data);
+            try
+            {
+                return new RuntimeResult(new Values.StringValue(str.Substring(i_start, i_len)).SetPositionAndContext(position, context));
+            }
+            catch { }
+            return new RuntimeResult(new RuntimeError(position, "Index out of range.", context));
+        }
+
+        static RuntimeResult str_center(Values.Value value, Position position, Context context)
+        {
+            string str = value.ToString();
+            Values.Value widthVal = context.GetSymbol("width");
+            Values.Value fill = context.GetSymbol("fillChar");
+            if (fill.Type != Values.ValueType.STRING)
+                return new RuntimeResult(new RuntimeError(position, "Expected a char for fillChar", context));
+            if(fill.Data.ToString().Length == 0)
+                return new RuntimeResult(new RuntimeError(position, "Expected a valid char for fillChar", context));
+            char fillChar = fill.Data.ToString()[0];
+            if (widthVal.Type != Values.ValueType.INTEGER && widthVal.Type != Values.ValueType.INT64)
+                return new RuntimeResult(new RuntimeError(position, "Expected an integer for width", context));
+            int width = Convert.ToInt32(widthVal.Data);
+            int spaces = width - str.Length;
+            int padLeft = spaces / 2 + str.Length;
+            string newStr = str.PadLeft(padLeft, fillChar).PadRight(width, fillChar);
+            return new RuntimeResult(new Values.StringValue(newStr).SetPositionAndContext(position, context));
+        }
+        #endregion
     }
 
     class BuiltinMethod { 

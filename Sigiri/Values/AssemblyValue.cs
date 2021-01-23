@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -63,11 +64,21 @@ namespace Sigiri.Values
             if (value == null)
                 return new NullValue().SetPositionAndContext(position, context);
             string type = value.GetType().Name;
-            
+
             if (type.Equals("Double") || type.Equals("Single") || type.Equals("Decimal"))
-                return new FloatValue(value).SetPositionAndContext(position, context);
-            if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32") || type.Equals("Int64"))
-                return new IntegerValue(value).SetPositionAndContext(position, context);
+            {
+                double dbl = Convert.ToDouble(value);
+                if (Math.Floor(dbl) != dbl)
+                    return new FloatValue(dbl).SetPositionAndContext(position, context);
+                else
+                    return new IntegerValue(Convert.ToInt32(dbl)).SetPositionAndContext(position, context);
+            }
+            if (type.Equals("Byte") || type.Equals("Short") || type.Equals("Int32"))
+                return new IntegerValue(Convert.ToInt32(value)).SetPositionAndContext(position, context);
+            if (type.Equals("Boolean"))
+                return new IntegerValue((bool)value).SetPositionAndContext(position, context);
+            if (type.Equals("Int64"))
+                return new Int64Value(Convert.ToInt64(value)).SetPositionAndContext(position, context);
             if (type.Equals("Char") || type.Equals("String"))
                 return new StringValue(value).SetPositionAndContext(position, context);
             if (type.Equals("Byte[]"))

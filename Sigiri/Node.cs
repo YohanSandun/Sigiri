@@ -428,7 +428,7 @@ namespace Sigiri
 
         public override string ToString()
         {
-            return "((" + BaseNode + ")." + Node + ")";
+            return "(" + BaseNode + "." + Node + ")";
         }
     }
 

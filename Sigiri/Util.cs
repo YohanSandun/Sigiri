@@ -2,7 +2,8 @@
 {
     class Util
     {
-        public static object[] ListToArray(Values.Value list) {
+        public static object[] ListToArray(Values.Value list)
+        {
             try
             {
                 int count = list.GetElementCount();
@@ -17,8 +18,10 @@
             return null;
         }
 
-        public static bool isPremitiveType(Values.ValueType type) {
-            switch (type) {
+        public static bool isPremitiveType(Values.ValueType type)
+        {
+            switch (type)
+            {
                 case Values.ValueType.INTEGER:
                 case Values.ValueType.FLOAT:
                 case Values.ValueType.STRING:
@@ -32,7 +35,8 @@
             return false;
         }
 
-        public static System.Numerics.BigInteger BigIntPow(long b, long exp) {
+        public static System.Numerics.BigInteger BigIntPow(long b, long exp)
+        {
             System.Numerics.BigInteger result = 1;
             if (exp > 0)
             {
@@ -63,7 +67,7 @@
                     result *= b;
                     --exp;
                 }
-                return new Values.ComplexValue(result);
+                return new Values.BigInt(result);
             }
             else
             {
@@ -85,7 +89,7 @@
                     result *= b;
                     --exp;
                 }
-                return new Values.ComplexValue(result);
+                return new Values.BigInt(result);
             }
             else
             {
@@ -101,6 +105,23 @@
         public static Values.Value BigPow(System.Numerics.BigInteger b, double exp)
         {
             return new Values.FloatValue(System.Math.Pow(System.Convert.ToDouble(b), exp));
+        }
+        public static string Capitalize(string str)
+        {
+            if (str.Length <= 0)
+                return str;
+            return str.Length == 1 ? str.ToUpper() : str[0].ToString().ToUpper() + str.Substring(1);
+        }
+
+        public static int CountSubstring(this string text, string value, int start, int _count)
+        {
+            int count = 0, minIndex = text.IndexOf(value, start, _count);
+            while (minIndex != -1)
+            {
+                minIndex = text.IndexOf(value, minIndex + value.Length, _count - (minIndex + value.Length));
+                count++;
+            }
+            return count;
         }
     }
 }

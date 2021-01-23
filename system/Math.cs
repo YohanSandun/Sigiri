@@ -114,6 +114,11 @@ namespace system
         {
             return System.Math.Sqrt(x);
         }
+        public static double trunc(double x)
+        {
+            return System.Math.Truncate(x);
+        }
+
         #endregion
 
         #region Complex
