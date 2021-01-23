@@ -8,9 +8,6 @@ x = 123456789123456789123456789123456789123456789
 x:big = 10
 ```
 
-### Attributes of a complex object
-- None for now
-
 ### Associated methods
 Associated methods with big numbers are provided by `system.math` library. Therfore, you have to load it first to use below methods. Example,
 ```sh
