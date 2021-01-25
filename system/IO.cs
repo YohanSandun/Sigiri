@@ -2,7 +2,7 @@
 
 namespace system
 {
-    class IO
+    class io
     {
         FileStream Stream = null;
         string fname = "";

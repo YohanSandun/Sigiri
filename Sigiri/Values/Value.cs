@@ -16,7 +16,8 @@ namespace Sigiri.Values
         METHOD,
         CLASS,
         OBJECT,
-        ASSEMBLY
+        ASSEMBLY,
+        BYTE_ARRAY
     }
 
     abstract class Value

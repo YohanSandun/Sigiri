@@ -1,9 +1,9 @@
 class File {
 	method init(fileName, mode="r") {
-		this.IO = load system.IO
+		this.io = load system.io
 		this.file = fileName
 		this.mode = mode
-		IO.init(fileName, mode)
+		io.init(fileName, mode)
 	}
 
 	method readAllLines(lineTerminator="\r\n") {
@@ -11,7 +11,7 @@ class File {
 			print("ERROR: file opened with wrong mode")
 			return
 		}
-		return split(IO.readAllText(), lineTerminator)
+		return split(io.readAllText(), lineTerminator)
 	}
 
 	method read() {
@@ -19,7 +19,7 @@ class File {
 			print("ERROR: file opened with wrong mode")
 			return
 		}
-		return IO.readAllText()
+		return io.readAllText()
 	}
 
 	method readBytes(offset, count) {
@@ -27,7 +27,7 @@ class File {
 			print("ERROR: file opened with wrong mode")
 			return
 		}
-		return IO.read(offset, count)
+		return io.read(offset, count)
 	}
 	
 	method readAllBytes() {
@@ -35,7 +35,7 @@ class File {
 			print("ERROR: file opened with wrong mode")
 			return
 		}
-		return IO.read(0, IO.getLength())
+		return io.read(0, io.getLength())
 	}
 
 	method readByte() {
@@ -43,7 +43,7 @@ class File {
 			print("ERROR: file opened with wrong mode")
 			return
 		}
-		return IO.readByte()
+		return io.readByte()
 	}
 
 	method write(text, flush=true) {
@@ -51,7 +51,7 @@ class File {
 			print("ERROR: file opened with wrong mode")
 			return
 		}
-		IO.writeText(text, flush)
+		io.writeText(text, flush)
 	}
 
 	method writeLine(line, flush=true) {
@@ -59,7 +59,7 @@ class File {
 			print("ERROR: file opened with wrong mode")
 			return
 		}
-		IO.writeText(line + "\n", flush)
+		io.writeText(line + "\n", flush)
 	}
 
 	method writeBytes(byteList, offset=null, flush=true) {
@@ -68,9 +68,9 @@ class File {
 			return
 		}
 		if !offset:
-			IO.write(byteList, flush)
+			io.write(byteList, flush)
 		else:
-			IO.writeAt(byteList, offset, flush)
+			io.writeAt(byteList, offset, flush)
 	}
 
 	method writeByte(byte, flush=true) {
@@ -78,18 +78,18 @@ class File {
 			print("ERROR: file opened with wrong mode")
 			return
 		}
-		IO.writeByte(byte, flush)
+		io.writeByte(byte, flush)
 	}
 
 	method flush():
-		IO.flush()
+		io.flush()
 
 	method close(): 
-		IO.close()
+		io.close()
 
 	method getLength(): 
-		return IO.getLength()
+		return io.getLength()
 
 	method seek(offset, origin="c"):
-		IO.seek(offset, origin)
+		io.seek(offset, origin)
 }

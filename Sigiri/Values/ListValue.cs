@@ -70,6 +70,7 @@ namespace Sigiri.Values
             }
             return new ListValue(values);
         }
+
         public static ListValue FromArray(int[] array)
         {
             List<Value> values = new List<Value>();
@@ -78,6 +79,42 @@ namespace Sigiri.Values
                 values.Add(new IntegerValue(array[i]));
             }
             return new ListValue(values);
+        }
+
+        public static ListValue FromArray(string[] array)
+        {
+            List<Value> values = new List<Value>();
+            for (int i = 0; i < array.Length; i++)
+            {
+                values.Add(new StringValue(array[i]));
+            }
+            return new ListValue(values);
+        }
+
+        public ByteArrayValue ToByteArray() {
+            try
+            {
+                byte[] array = new byte[Elements.Count];
+                for (int i = 0; i < Elements.Count; i++)
+                {
+                    array[i] = System.Convert.ToByte(Elements[i].Data);
+                }
+                return new ByteArrayValue(array);
+            }
+            catch { return null; }
+        }
+        public string[] ToStringArray()
+        {
+            try
+            {
+                string[] array = new string[Elements.Count];
+                for (int i = 0; i < Elements.Count; i++)
+                {
+                    array[i] = (Elements[i].ToString());
+                }
+                return array;
+            }
+            catch { return null; }
         }
 
         public override int GetElementCount()

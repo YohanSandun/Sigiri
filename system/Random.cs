@@ -1,6 +1,6 @@
 ﻿namespace system
 {
-    class Random
+    class random
     {
         private static System.Random rnd = new System.Random();
 

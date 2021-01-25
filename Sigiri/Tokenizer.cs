@@ -63,7 +63,8 @@ namespace Sigiri
             while (currentChar != '\0') {
                 if (SkipChars.Contains(currentChar))
                     Advance();
-                else if (currentChar == '0') {
+                else if (currentChar == '0')
+                {
                     if (Peek() == 'x' || Peek() == 'X')
                     {
                         TokenizerResult result = MakeHexNumber();
@@ -82,7 +83,8 @@ namespace Sigiri
                         if (result.HasError) return result;
                         tokens.Add(result.SingleToken);
                     }
-                    else {
+                    else
+                    {
                         TokenizerResult result = MakeNumber();
                         if (result.HasError)
                             return result;
@@ -95,6 +97,16 @@ namespace Sigiri
                     if (result.HasError)
                         return result;
                     tokens.Add(result.SingleToken);
+                }
+                else if (currentChar == 'b' || currentChar == 'B') {
+                    if (Peek() == '\'' || Peek() == '"')
+                    {
+                        Advance();
+                        Token strToken = MakeString(currentChar);
+                        tokens.Add(new Token(TokenType.BYTE_ARRAY, strToken.Value).SetPosition(strToken.Position));
+                    }
+                    else
+                        tokens.Add(MakeIdentifier());
                 }
                 else if (Letters.Contains(currentChar))
                 {

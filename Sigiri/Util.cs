@@ -113,15 +113,23 @@
             return str.Length == 1 ? str.ToUpper() : str[0].ToString().ToUpper() + str.Substring(1);
         }
 
-        public static int CountSubstring(this string text, string value, int start, int _count)
+        public static int CountSubstring(string str, string val, int start, int cnt)
         {
-            int count = 0, minIndex = text.IndexOf(value, start, _count);
-            while (minIndex != -1)
+            try
             {
-                minIndex = text.IndexOf(value, minIndex + value.Length, _count - (minIndex + value.Length));
-                count++;
+                str = str.Substring(start, cnt);
+                int index = str.IndexOf(val, 0);
+                int count = 0;
+                while (index != -1)
+                {
+                    count++;
+                    if (cnt - start + val.Length + 1 < 0)
+                        break;
+                    index = str.IndexOf(val, index + val.Length);
+                }
+                return count;
             }
-            return count;
+            catch { return 0; }
         }
     }
 }

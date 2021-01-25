@@ -77,6 +77,8 @@ namespace Sigiri
                 return new RuntimeResult(new Values.ComplexValue(
                     Convert.ToDouble(node.Token.Value), Convert.ToDouble(node.Token.SecondaryValue)
                     ).SetPositionAndContext(node.Token.Position, context));
+            else if (node.Token.Type == TokenType.BYTE_ARRAY)
+                return new RuntimeResult(new Values.ByteArrayValue(System.Text.Encoding.UTF8.GetBytes(node.Token.Value.ToString())).SetPositionAndContext(node.Token.Position, context));
             return null; // todo error handling
         }
 
@@ -616,6 +618,10 @@ namespace Sigiri
                             object[] array = Util.ListToArray(result.Value);
                             if (array == null)
                                 return new RuntimeResult(new RuntimeError(callNode.Position, "Error while converting list to an array", context));
+                            args.Add(array);
+                        } else if (result.Value.Type == Values.ValueType.BYTE_ARRAY)
+                        {
+                            byte[] array = ((Values.ByteArrayValue)result.Value).Bytes.ToArray();
                             args.Add(array);
                         }
                         else if (result.Value.IsBoolean)

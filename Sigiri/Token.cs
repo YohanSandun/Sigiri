@@ -6,6 +6,7 @@
         STRING,
         BIGINTEGER,
         COMPLEX,
+        BYTE_ARRAY,
 
         IDENTIFIER,
         KEYWORD,

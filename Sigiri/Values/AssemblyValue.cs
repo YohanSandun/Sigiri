@@ -82,7 +82,7 @@ namespace Sigiri.Values
             if (type.Equals("Char") || type.Equals("String"))
                 return new StringValue(value).SetPositionAndContext(position, context);
             if (type.Equals("Byte[]"))
-                return ListValue.FromArray((byte[])value).SetPositionAndContext(position,context);
+                return new ByteArrayValue((byte[])value).SetPositionAndContext(position,context);
             if (type.Equals("Complex"))
                 return new ComplexValue(value).SetPositionAndContext(position, context);
             if (type.Equals("BigInteger"))

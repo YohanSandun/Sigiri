@@ -38,11 +38,62 @@ namespace Sigiri.Values
                 case "capitalize":
                     return new RuntimeResult(new StringValue(Util.Capitalize(Data.ToString())).SetPositionAndContext(Position, Context));
                 case "center":
-                    return BuiltinMethods.ExecStringMethod(name, this, args, Position, Context);
                 case "subStr":
+                case "count":
+                case "encode":
+                case "index":
+                case "lastIndex":
+                case "insert":
+                case "padLeft":
+                case "padRight":
+                case "replace":
+                case "split":
                     return BuiltinMethods.ExecStringMethod(name, this, args, Position, Context);
-                //case "count":
-                //    return BuiltinMethods.ExecStringMethod(name, this, args, Position, Context);
+                case "isDigits":
+                    string str = ToString().ToLower();
+                    if (args.Count == 0)
+                    {
+                        foreach (char c in str)
+                        {
+                            if (c < 48 || c > 57)
+                                return new RuntimeResult(new IntegerValue(false).SetPositionAndContext(Position, Context));
+                        }
+                        return new RuntimeResult(new IntegerValue(true).SetPositionAndContext(Position, Context));
+                    }
+                    else {
+                        if (args[0].Item2.Type != ValueType.INTEGER && args[0].Item2.Type != ValueType.INT64)
+                            return new RuntimeResult(new RuntimeError(Position, "Base value should be an integer!", Context));
+                        int b = System.Convert.ToInt32(args[0].Item2.Data);
+                        if (b == 2) {
+                            foreach (char c in str)
+                                if (c != '0' && c != '1')
+                                    return new RuntimeResult(new IntegerValue(false).SetPositionAndContext(Position, Context));
+                            return new RuntimeResult(new IntegerValue(true).SetPositionAndContext(Position, Context));
+                        }
+                        else if (b == 8)
+                        {
+                            foreach (char c in str)
+                                if (c < 48 || c > 55)
+                                    return new RuntimeResult(new IntegerValue(false).SetPositionAndContext(Position, Context));
+                            return new RuntimeResult(new IntegerValue(true).SetPositionAndContext(Position, Context));
+                        }
+                        else if (b == 10)
+                        {
+                            foreach (char c in str)
+                                if (c < 48 || c > 57)
+                                    return new RuntimeResult(new IntegerValue(false).SetPositionAndContext(Position, Context));
+                            return new RuntimeResult(new IntegerValue(true).SetPositionAndContext(Position, Context));
+                        }
+                        else if (b == 16)
+                        {
+                            foreach (char c in str)
+                                if (c < 48 || c > 57)
+                                    if (c != 'a' && c != 'b' && c != 'c' && c != 'd' && c != 'e' && c != 'f')
+                                        return new RuntimeResult(new IntegerValue(false).SetPositionAndContext(Position, Context));
+                            return new RuntimeResult(new IntegerValue(true).SetPositionAndContext(Position, Context));
+                        }
+                    }
+                    return new RuntimeResult(new RuntimeError(Position, "Unknown base value!", Context));
                 case "toUpper":
                     return new RuntimeResult(new StringValue(Data.ToString().ToUpper()).SetPositionAndContext(Position, Context));
                 case "toLower":
@@ -55,6 +106,12 @@ namespace Sigiri.Values
                     return new RuntimeResult(new StringValue(Data.ToString().TrimStart()).SetPositionAndContext(Position, Context));
                 case "clone":
                     return new RuntimeResult(new StringValue(Data).SetPositionAndContext(Position, Context));
+                case "reverse":
+                    string newStr = "";
+                    string baseStr = ToString();
+                    for (int i = 0; i < baseStr.Length; i++)
+                        newStr =  baseStr[i] + newStr;
+                    return new RuntimeResult(new StringValue(newStr).SetPositionAndContext(Position, Context));
                 case "startsWith":
                     if (args.Count != 1)
                         return new RuntimeResult(new RuntimeError(Position, "Argument count mismatch for method startsWith()", Context));
@@ -67,6 +124,15 @@ namespace Sigiri.Values
                     return new RuntimeResult(Data.ToString().EndsWith(val1) ? new IntegerValue(1,true).SetPositionAndContext(Position, Context) : new IntegerValue(0,true).SetPositionAndContext(Position, Context));
             }
             return base.CallMethod(name, args);
+        }
+
+        public static StringValue FromArray(char[] array) {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            foreach (char item in array)
+            {
+                sb.Append(item);
+            }
+            return new StringValue(sb.ToString());
         }
 
         public override RuntimeResult GetAttribute(string name)

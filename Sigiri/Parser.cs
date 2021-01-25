@@ -606,7 +606,7 @@ namespace Sigiri
 
         private ParserResult Atom(bool byPassDot = false) {
             Token token = currentToken;
-            if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || token.Type == TokenType.BIGINTEGER || token.Type == TokenType.COMPLEX)
+            if (token.Type == TokenType.INTEGER || token.Type == TokenType.FLOAT || token.Type == TokenType.BIGINTEGER || token.Type == TokenType.COMPLEX || token.Type == TokenType.BYTE_ARRAY)
             {
                 Advance();
                 return new ParserResult(new NumberNode(token));
