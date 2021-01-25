@@ -79,7 +79,7 @@ namespace Sigiri
             }, bytes));
 
             /* Methods belongs to string objects (not avaiable in public) */
-            StringMethods.Add("subString", new BuiltinMethod(new List<string>() { "startIndex", "length" }, new Dictionary<string, Values.Value>() {
+            StringMethods.Add("subStr", new BuiltinMethod(new List<string>() { "startIndex", "length" }, new Dictionary<string, Values.Value>() {
                 { "startIndex", new Values.IntegerValue(0) },
                 { "length", new Values.NullValue() }
             }, str_substr));

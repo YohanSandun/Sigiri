@@ -22,19 +22,42 @@ namespace Sigiri.Values
                 return new RuntimeResult(new RuntimeError(Position, "Index out of range", Context));
         }
 
+        public override RuntimeResult SubscriptAssign(Value index, Value value)
+        {
+            if (index.Type != ValueType.INTEGER)
+                return new RuntimeResult(new RuntimeError(Position, "Index must be an integer", Context));
+            if (value.ToString().Length != 1)
+                return new RuntimeResult(new RuntimeError(Position, "Expected one character", Context));
+            int idx = (int)index.Data;
+            string str = Data.ToString();
+            if (idx >= 0 && idx < str.Length)
+            {
+                char[] array = ToString().ToCharArray();
+                array[idx] = value.ToString()[0];
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                foreach (char item in array)
+                    sb.Append(item);
+                Data = sb.ToString();
+                return new RuntimeResult(this);
+            }
+            else
+                return new RuntimeResult(new RuntimeError(Position, "Index out of range", Context));
+        }
+
         public override RuntimeResult CallMethod(string name, List<(string, Value)> args)
         {
             switch (name) {
                 case "append":
+                    string newStr1 = ToString();
                     for (int i = 0; i < args.Count; i++)
                     {
                         ValueType t = args[i].Item2.Type;
                         if (t == ValueType.STRING || t == ValueType.INTEGER || t == ValueType.FLOAT)
-                            Data = Data.ToString() + args[i].Item2.Data.ToString();
+                            newStr1 += args[i].Item2.Data.ToString();
                         else
                             return new RuntimeResult(new RuntimeError(Position, "String concadination error", Context));
                     }
-                    return new RuntimeResult(this);
+                    return new RuntimeResult(new StringValue(newStr1).SetPositionAndContext(Position, Context));
                 case "capitalize":
                     return new RuntimeResult(new StringValue(Util.Capitalize(Data.ToString())).SetPositionAndContext(Position, Context));
                 case "center":
