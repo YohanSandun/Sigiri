@@ -20,9 +20,10 @@ Sigiri is a simple, object-oriented, interpreted programming laguage. Designed f
 - [`big`](https://github.com/YohanSandun/Sigiri/blob/master/docs/BigNumbers.md): can hold any positive or negative number (arbitrary-precision signed number)
 - [`complex`](https://github.com/YohanSandun/Sigiri/blob/master/docs/ComplexNumbers.md): can hold complex numbers (x+yi)
 - `float`: can hold a floating point number (default size is 8 bytes)
-- `string`: can hold character sequence. denoted by double quotes ("Hello") or single quotes ('Hello')
+- [`string`](https://github.com/YohanSandun/Sigiri/blob/master/docs/Strings.md): can hold character sequence. denoted by double quotes ("Hello") or single quotes ('Hello')
 - `list`: can hold sequence of objects of any type. denoted by square brackets ([1, 2, 3])
 - `dictionary`: can hold collection of key:value pairs. denoted by curly braces ({'a':10, 'b':20})
+- `bytearray` : can hold sequence of bytes.
 ---------------------------------
 
 ### Arithmetic operators
