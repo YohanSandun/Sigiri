@@ -10,10 +10,6 @@ namespace Sigiri
         public static string BaseDirectory { get; set; }
         public static string LibraryExt { get; set; } = ".dll";
 
-        public static void countStr(string str, string val, int start, int cnt) {
-           
-        }
-
         static void Main(string[] args)
         {
             DetectLibraryExt();

@@ -23,9 +23,12 @@ namespace Sigiri.Values
             if (value != null)
                 return new RuntimeResult(value);
             FieldInfo fieldInfo = AsmType.GetField(name);
-            Value parsed = ParseValue(fieldInfo.GetValue(null), Position, Context);
-            if (parsed != null)
-                return new RuntimeResult(parsed);
+            if (fieldInfo != null)
+                return new RuntimeResult(ParseValue(fieldInfo.GetValue(Instance), Position, Context));
+            PropertyInfo propertyInfo = AsmType.GetProperty(name);
+            if (propertyInfo != null)
+                return new RuntimeResult(ParseValue(propertyInfo.GetValue(Instance), Position, Context));
+
             return new RuntimeResult(new RuntimeError(Position, "Error while accessing the attribute '" + name + "'", Context));
         }
 
@@ -87,7 +90,7 @@ namespace Sigiri.Values
                 return new ComplexValue(value).SetPositionAndContext(position, context);
             if (type.Equals("BigInteger"))
                 return new BigInt(value).SetPositionAndContext(position, context);
-            return null;
+            return new CSharpValue(value).SetPositionAndContext(position, context);
         }
 
         public bool LoadAsm(string path, string name, string typeName) {

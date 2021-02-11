@@ -69,6 +69,8 @@ namespace Sigiri
         private RuntimeResult VisitNumberNode(NumberNode node, Context context) {
             if (node.Token.Type == TokenType.INTEGER)
                 return new RuntimeResult(new Values.IntegerValue(Convert.ToInt32(node.Token.Value)).SetPositionAndContext(node.Token.Position, context));
+            else if (node.Token.Type == TokenType.LONG)
+                return new RuntimeResult(new Values.Int64Value(Convert.ToInt64(node.Token.Value)).SetPositionAndContext(node.Token.Position, context));
             else if (node.Token.Type == TokenType.FLOAT)
                 return new RuntimeResult(new Values.FloatValue(Convert.ToDouble(node.Token.Value)).SetPositionAndContext(node.Token.Position, context));
             else if (node.Token.Type == TokenType.BIGINTEGER)
@@ -341,7 +343,14 @@ namespace Sigiri
             while (condResult.Value.GetAsBoolean()) {
                 RuntimeResult bodyResult = Visit(node.Body, context);
                 if (bodyResult.HasError) return bodyResult;
+                if (context.Return)
+                    return bodyResult;
                 output = bodyResult.Value;
+                if (context.Break)
+                {
+                    context.Break = false;
+                    break;
+                }
                 condResult = Visit(node.Condition, context);
                 if (condResult.HasError) return condResult;
             }
@@ -631,7 +640,7 @@ namespace Sigiri
                     }
                     return asmVal.Invoke(name, args.ToArray());
                 }
-                else if (Util.isPremitiveType(runtimeResult.Value.Type))
+                else if (Util.isPremitiveType(runtimeResult.Value.Type) || runtimeResult.Value.Type == Values.ValueType.C_SHARP)
                 {
                     CallNode callNode = (CallNode)node.Node;
                     List<(string, Values.Value)> args = new List<(string, Values.Value)>();
@@ -648,7 +657,7 @@ namespace Sigiri
             }
             else if (node.Node.Type == NodeType.VAR_ACCESS)
             {
-                if (runtimeResult.Value.Type == Values.ValueType.ASSEMBLY)
+                if (runtimeResult.Value.Type == Values.ValueType.ASSEMBLY || runtimeResult.Value.Type == Values.ValueType.C_SHARP)
                 {
                     VarAccessNode vaccess = (VarAccessNode)node.Node;
                     return runtimeResult.Value.GetAttribute(vaccess.Token.Value.ToString());

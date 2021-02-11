@@ -2,6 +2,7 @@
 {
     enum TokenType { 
         INTEGER,
+        LONG,
         FLOAT,
         STRING,
         BIGINTEGER,

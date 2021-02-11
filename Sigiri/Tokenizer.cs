@@ -604,8 +604,13 @@ namespace Sigiri
                 int tryInt;
                 if (int.TryParse(number.ToString(), out tryInt))
                     return new TokenizerResult(new Token(TokenType.INTEGER, number.ToString()).SetPosition(positionStart));
-                else
-                    return new TokenizerResult(new Token(TokenType.BIGINTEGER, number.ToString()).SetPosition(positionStart));
+                else {
+                    long tryLong;
+                    if (long.TryParse(number.ToString(), out tryLong))
+                        return new TokenizerResult(new Token(TokenType.LONG, number.ToString()).SetPosition(positionStart));
+                    else
+                        return new TokenizerResult(new Token(TokenType.BIGINTEGER, number.ToString()).SetPosition(positionStart));
+                }   
             }
             else if (dotCount == 1)
                 return new TokenizerResult(new Token(TokenType.FLOAT, number.ToString()).SetPosition(positionStart));

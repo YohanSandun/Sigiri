@@ -96,7 +96,7 @@ namespace Sigiri.Values
                 int otherValue = (int)other.Data;
                 if (otherValue == 0)
                     return new RuntimeResult(new RuntimeError(Position, "Division by zero", Context));
-                return new RuntimeResult(new IntegerValue((long)Data / otherValue).SetPositionAndContext(Position, Context));
+                return new RuntimeResult(new Int64Value((long)Data / otherValue).SetPositionAndContext(Position, Context));
             }
             else if (other.Type == ValueType.INT64)
             {
@@ -136,7 +136,7 @@ namespace Sigiri.Values
                 int otherValue = (int)other.Data;
                 if (otherValue == 0)
                     return new RuntimeResult(new RuntimeError(Position, "Division by zero", Context));
-                return new RuntimeResult(new IntegerValue((long)Data % otherValue).SetPositionAndContext(Position, Context));
+                return new RuntimeResult(new Int64Value((long)Data % otherValue).SetPositionAndContext(Position, Context));
             }
             else if (other.Type == ValueType.INT64)
             {

@@ -4,6 +4,7 @@ namespace system
 {
     public class math
     {
+
         public static readonly double pi = System.Math.PI;
         public static readonly double e = System.Math.E;
         public static readonly double nan = double.NaN;

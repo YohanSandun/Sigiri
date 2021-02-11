@@ -131,5 +131,28 @@
             }
             catch { return 0; }
         }
+
+
+        public static object Convert(Values.Value value) {
+            if (value.Type == Values.ValueType.INT64)
+                return System.Convert.ToInt64(value.Data);
+            if (value.Type == Values.ValueType.INTEGER)
+            {
+                Values.IntegerValue intVal = (Values.IntegerValue)value;
+                if (intVal.asBoolean)
+                    return value.GetAsBoolean();
+                return System.Convert.ToInt32(value.Data);
+            }
+            if (value.Type == Values.ValueType.BIGINTEGER)
+                return System.Numerics.BigInteger.Parse(value.Data.ToString());
+            if (value.Type == Values.ValueType.COMPLEX)
+                return value.Data;
+            if (value.Type == Values.ValueType.STRING)
+                return value.Data;
+            if (value.Type == Values.ValueType.FLOAT)
+                return System.Convert.ToDouble(value.Data);
+            return null;
+        }
+
     }
 }

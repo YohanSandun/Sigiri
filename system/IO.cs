@@ -4,6 +4,7 @@ namespace system
 {
     class io
     {
+
         FileStream Stream = null;
         string fname = "";
         string mode = "";
@@ -34,12 +35,12 @@ namespace system
                 Stream = File.Open(fname, FileMode.OpenOrCreate);
         }
 
-        public byte[] read(int offset, long count)
+        public byte[] read(int count)
         {
             if (Stream == null)
                 openFile();
             byte[] buffer = new byte[count];
-            Stream.Read(buffer, offset, System.Convert.ToInt32(count));
+            Stream.Read(buffer, 0, count);
             return buffer;
         }
 
@@ -69,24 +70,10 @@ namespace system
             return Stream.ReadByte();
         }
 
-        public void write(object[] array, bool flush) {
+        public void write(byte[] array, bool flush) {
             if (Stream == null)
                 openFile();
-            byte[] byteArray = new byte[array.Length];
-            for (int i = 0; i < array.Length; i++)
-                byteArray[i] = System.Convert.ToByte(array[i]);
-            Stream.Write(byteArray);
-            if (flush)
-                Stream.Flush();
-        }
-        public void writeAt(object[] array, int offset, bool flush)
-        {
-            if (Stream == null)
-                openFile();
-            byte[] byteArray = new byte[array.Length];
-            for (int i = 0; i < array.Length; i++)
-                byteArray[i] = System.Convert.ToByte(array[i]);
-            Stream.Write(byteArray, offset, byteArray.Length);
+            Stream.Write(array);
             if (flush)
                 Stream.Flush();
         }
