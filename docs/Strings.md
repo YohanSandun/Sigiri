@@ -11,7 +11,7 @@ a \"multiline\"
 string"
 ```
 
-### Iterables
+### Iterable
 Strings are iterable objects.
 ```sh
 str = "Sigiri string"
@@ -169,21 +169,21 @@ str = str.trimStart() // now str is "Sigiri Language "
 
 ### String library
 `system.string` library provides few constant string values.
--`asciiLetters` : All ascii letters ('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
--`asciiLower` : All lower-case ascii letters ('abcdefghijklmnopqrstuvwxyz')
--`asciiUper` : All upper-case ascii letters ('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
--`digits` : 0-9 digits ('0123456789')
--`octdigits` : oct letters ('01234567')
--`hexdigits` : hex letters ('0123456789abcdefABCDEF')
--`punctuation` : Punctuation characters.
+- `asciiLetters` : All ascii letters ('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+- `asciiLower` : All lower-case ascii letters ('abcdefghijklmnopqrstuvwxyz')
+- `asciiUper` : All upper-case ascii letters ('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+- `digits` : 0-9 digits ('0123456789')
+- `octdigits` : oct letters ('01234567')
+- `hexdigits` : hex letters ('0123456789abcdefABCDEF')
+- `punctuation` : Punctuation characters.
 
 ### Notes
--String concadination can be done using `+` operator.
+- String concadination can be done using `+` operator.
 ```sh
 str = "Sigiri " + "Language"
 ```
--Strings can be multiplied with integers.
+- Strings can be multiplied with integers.
 ```sh
 str = "Sigiri " * 3 // now str is "Sigiri Sigiri Sigiri"
 ```
--Built-in `len(value)` method can be used to get the length of a string.
+- Built-in `len(value)` method can be used to get the length of a string.
