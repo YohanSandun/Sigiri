@@ -183,7 +183,7 @@ Methods and attributes of a class can be accessd or modified using `.` operator.
 
 ### Inherit example
 ```sh
-calss Animal {
+class Animal {
     method init(kind) {
         this.kind = kind
     }
