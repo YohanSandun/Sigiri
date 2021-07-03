@@ -78,7 +78,7 @@ Below are the comparison operators:
 |     >    | True if left side operand is greater than right side             |  a > b |
 |    <=    | True if left side operand is greater than or equal to right side | a <= b |
 |    >=    | True if left side operand is less than or equal to right side    | a >= b |
-|    in    | True if left side operand is contains in right side operand      | a >= b |
+|    in    | True if left side operand is contains in right side operand      | a in b |
 
 ---------------------------------
 ### Operator precedence
